@@ -1,10 +1,10 @@
 const {Router} = require('express');
 const { 
-    getListaUsuarios, 
     crearUsuario, 
-    usuariosPut, 
+    editarUsuarioReportado, 
     editarAccesoDeUsuario,
-    usuauriosDelete } = require('../controllers/usuarios');
+    getListaUsuarios, 
+    usuauriosDelete} = require('../controllers/usuarios');
 
 const router = Router();
 
@@ -12,7 +12,7 @@ router.get('/', getListaUsuarios);
   
 router.post('/', crearUsuario);  
 
-router.put('/:id', usuariosPut);
+router.put('/:id/reportados', editarUsuarioReportado);
 
 router.delete('/:id', usuauriosDelete);  
 

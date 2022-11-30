@@ -52,6 +52,14 @@ Usuario.validarCamposVacios = (data) => {
 
 }
 
+Usuario.validarCampoVacioContadorReportes = (contadorReportes) => {
+
+    if(!contadorReportes) return "Contador de reportes no ingresado";
+
+    return null;
+
+}
+
 Usuario.validarTipoDeDato = (data) => {
 
     if(typeof data.usuario !== 
@@ -81,9 +89,6 @@ Usuario.validarTipoDeDato = (data) => {
     if(typeof data.biografia !== "string" && 
         data.biografia) return "El tipo de dato de la biografia es incorrecta";
 
-    if(typeof data.contadorReportes !== "number" && 
-        data.contadorReportes) return "El tipo de dato del contador de reportes es incorrecto";
-
     if(typeof data.direccion !== "string" && 
     data.direccion) return "El tipo de dato de la direccion es incorrecto";
 
@@ -92,6 +97,15 @@ Usuario.validarTipoDeDato = (data) => {
 
     if(typeof data.fechaNacimiento !== 
         "string") return "El tipo de dato de la fecha es incorrecta";
+
+    return null;
+
+}
+
+Usuario.validarTipoDeDatoContadorReportes = (contadorReportes) => {
+
+    if(typeof contadorReportes !== "number" && 
+        contadorReportes) return "El tipo de dato del contador de reportes es incorrecto";
 
     return null;
 
@@ -135,9 +149,15 @@ Usuario.validarLimites = (data) => {
 
     }
 
-    if(data.contadorReportes){
+    return null;
 
-        if(data.contadorReportes > 
+}
+
+Usuario.validarLimiteContadorReportes = (contadorReportes) => {
+
+    if(contadorReportes){
+
+        if(contadorReportes > 
             99999) return "El contador de reportes excede el limite de 99999";
 
     }
@@ -175,12 +195,6 @@ Usuario.validarContrasenia = (contrasenia) => {
     return null;
 }
 
-Usuario.validarCorreo = (correo) => {
-
-    return validadorCorreo.validate(correo);
-
-}
-
 Usuario.validarFecha = (fecha) => {
 
     const formato = /^\d{4}-\d{2}-\d{2}$/;
@@ -207,13 +221,20 @@ Usuario.validarTelefono = (telefono) => {
 
     const formato = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
 
-    if(!formato.test(telefono)) return "El telefono debe tener 10 digitos";
+    if(!formato.test(telefono)) return "El telefono debe tener 10 digitos y " + 
+        "el formato: \nXXX XXXX XXXX\nXXX-XXXX-XXXX\nXXXXXXXXXXX";
 
     return null;
 
 }
 
-Usuario.validarAccesoDelUsuario = (estado, idRol) => {
+Usuario.validarCorreo = (correo) => {
+
+    return validadorCorreo.validate(correo);
+
+}
+
+Usuario.validarTipoUsuario = (estado, idRol) => {
 
     if(estado === 'Aceptado' && idRol === 'AN_123_R') return null;
 
@@ -315,6 +336,30 @@ Usuario.crearUsuario = (data, callback) => {
 
 }
 
+Usuario.editarUsuarioReportado = (id, contadorReportes, callback) => {
+
+    dbConn.query("UPDATE Usuario SET contadorReportes = ? WHERE idUsuario = ?", [contadorReportes, id], (err, res) => {
+
+        (err)
+            ?callback(err, null)
+            :callback(null, res);
+
+    });
+
+}
+
+Usuario.getContadorReportes = (id, callback) => {
+
+    dbConn.query("SELECT contadorReportes FROM Usuario WHERE idUsuario = ?", id, (err, res) => {
+
+        (err)
+            ?callback(err, null)
+            :callback(null, res);
+
+    });
+
+}
+
 Usuario.editarAcceso = (id, estado, callback) => {
     
     dbConn.query("UPDATE Usuario SET estadoUsuario = ? WHERE idUsuario = ?", [estado, id], (err, res) => {
@@ -335,7 +380,7 @@ Usuario.borrar = (id, callback) => {
 Usuario.getListaUsuarios = (callback) => {
 
     const consulta = "SELECT idUsuario, usuario, contadorReportes FROM Usuario " + 
-    "WHERE idRol != 'Administrador' AND estadoUsuario = 'Aceptado'";
+    "WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado'";
 
     dbConn.query(consulta, (err, res) => {
 
