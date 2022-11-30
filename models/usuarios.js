@@ -12,7 +12,7 @@ let Usuario = (usuario) => {
     this.nombre = usuario.nombre;
     this.direccion = usuario.direccion;
     this.fechaNacimiento = usuario.fechaNacimiento;
-    this.fotoPerfilDeUsuario = usuario.fotoPerfilDeUsuario;
+    this.fotoPerfilUsuario = usuario.fotoPerfilUsuario;
     this.numeroTelefono = usuario.numeroTelefono;
     this.estadoUsuario = usuario.estadoUsuario;
     this.idRol = usuario.idRol;
@@ -39,8 +39,8 @@ Usuario.validarCamposVacios = (data) => {
     if(!data.contrasenia || 
         data.contrasenia.trim() === "") return "Contraseña no ingresada";
 
-    //if(!data.numeroTelefono || 
-    //    data.numeroTelefono.trim() === "") return "Telefono no ingresado";
+    if(!data.numeroTelefono || 
+        data.numeroTelefono.trim() === "") return "Telefono no ingresado";
 
     if(!data.nombre || 
         data.nombre.trim() === "") return "Nombre de la persona no ingresado";
@@ -69,8 +69,8 @@ Usuario.validarTipoDeDato = (data) => {
     if(typeof data.nombre !== 
         "string") return "El tipo de dato del nombre de la persona es incorrecto"
 
-    //if(typeof data.numeroTelefono !== 
-    //    "string") return "El tipo de dato del numero de telefono es incorrecto";
+    if(typeof data.numeroTelefono !== 
+        "string") return "El tipo de dato del numero de telefono es incorrecto";
 
     if(typeof data.estadoUsuario !== 
         "string") return "El tipo de dato del estado del usuario es incorrecto";
@@ -87,8 +87,8 @@ Usuario.validarTipoDeDato = (data) => {
     if(typeof data.direccion !== "string" && 
     data.direccion) return "El tipo de dato de la direccion es incorrecto";
 
-    if(typeof data.fotoPerfilDeUsuario !== "string" && 
-        data.fotoPerfilDeUsuario) return "El tipo de dato de la foto de perfil es incorrecto";
+    if(typeof data.fotoPerfilUsuario !== "string" && 
+        data.fotoPerfilUsuario) return "El tipo de dato de la foto de perfil es incorrecto";
 
     if(typeof data.fechaNacimiento !== 
         "string") return "El tipo de dato de la fecha es incorrecta";
@@ -108,7 +108,7 @@ Usuario.validarLimites = (data) => {
     if(data.biografia){
 
         if(data.biografia.length > 
-            50) return "La biografia excede el limite de 50 caracteres";
+            100) return "La biografia excede el limite de 50 caracteres";
 
     }
 
@@ -128,9 +128,9 @@ Usuario.validarLimites = (data) => {
 
     }
 
-    if(data.fotoPerfilDeUsuario){
+    if(data.fotoPerfilUsuario){
 
-        if(data.fotoPerfilDeUsuario.length > 
+        if(data.fotoPerfilUsuario.length > 
             500) return "La foto de perfil excede el limite de 500 caracteres";
 
     }
@@ -315,10 +315,36 @@ Usuario.crearUsuario = (data, callback) => {
 
 }
 
+Usuario.editarAcceso = (id, estado, callback) => {
+    
+    dbConn.query("UPDATE Usuario SET estadoUsuario = ? WHERE idUsuario = ?", [estado, id], (err, res) => {
+
+        (err)
+            ?callback(err, null)
+            :callback(null, res);
+
+    });
+}
+
 Usuario.borrar = (id, callback) => {
     dbConn.query("DELETE FROM Usuario WHERE idUsuario = ?", id, (err, res) => {
         (err)?callback(err, null):callback(null, res);
     });
+}
+
+Usuario.getListaUsuarios = (callback) => {
+
+    const consulta = "SELECT idUsuario, usuario, contadorReportes FROM Usuario " + 
+    "WHERE idRol != 'Administrador' AND estadoUsuario = 'Aceptado'";
+
+    dbConn.query(consulta, (err, res) => {
+
+        (err)
+            ?callback(err, null)
+            :callback(null, res);
+
+    });
+
 }
 
 module.exports = Usuario;
