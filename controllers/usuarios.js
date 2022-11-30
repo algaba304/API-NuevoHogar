@@ -1,20 +1,6 @@
 const {response, request} = require('express');
 const Usuario = require('../models/usuarios');
 
-const usuariosGet = (req, res = response) => {
-
-  const{q, nombre = 'no name', apikey, page = 1, limit} = req.query;
-
-    res.json({
-        msg:" api GET desde controlador",
-        q,
-        nombre,
-        apikey,
-        page,
-        limit
-    });
-  }
-
 const crearUsuario = async (req = request, res = response) => {
 
   let data = req.body;
@@ -167,7 +153,7 @@ const crearUsuario = async (req = request, res = response) => {
     });
 
     if(resultadoRegistro.affectedRows === 1) return res
-      .status(200).send({mensaje:"Se agrego el usuario exitosamente"});
+      .status(200).send({mensaje:"Se agregó el usuario exitosamente"});
 
   }catch(err){
 
@@ -178,13 +164,46 @@ const crearUsuario = async (req = request, res = response) => {
 
 }
 
-  const usuariosPut = (req, res = response) => {
-    const {id} = req.params;
-    res.json({
-        msg:" api PUT desde controlador",
-        id
+const editarAccesoDeUsuario = async (req = request, res = response) => {
+
+  const {id} = req.params;
+
+  const resultadoRegistro = await new Promise((resolve, reject) => {
+
+    Usuario.editarAcceso(id, data.estadoUsuario, (err, result) => {
+
+      (err)
+        ?reject(err)
+        :resolve(result);
+
     });
-  }
+
+  });
+
+  if(resultadoRegistro.affectedRows === 1) return res
+    .status(200).send({mensaje:"Se editó el usuario exitosamente"});
+
+}
+
+const usuariosPut = (req, res = response) => {
+  const {id} = req.params;
+  res.json({
+      msg:" api PUT desde controlador",
+      id
+  });
+}
+
+const getListaUsuarios = (req = request, res = response) => {
+
+  Usuario.getListaUsuarios((err, result) => {
+
+    (err)
+      ?res.status(400).send(err)
+      :res.status(200).send(result);
+
+  });
+  
+}
 
   const usuauriosDelete = (req = request, res = response) => {
     const {id} = req.params;
@@ -193,9 +212,10 @@ const crearUsuario = async (req = request, res = response) => {
     });
   }
 
-  module.exports = {
-    usuariosGet,
-    crearUsuario,
-    usuariosPut,
-    usuauriosDelete
+module.exports = {
+  getListaUsuarios,
+  crearUsuario,
+  usuariosPut,
+  editarAccesoDeUsuario,
+  usuauriosDelete
 };
