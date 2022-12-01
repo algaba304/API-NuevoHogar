@@ -275,7 +275,7 @@ const getListaUsuarios = (req = request, res = response) => {
 
       (err)
         ?res.status(500).send("Ourrió un error inesperado")
-        :res.status(200).send({listaUsuarios:result});
+        :res.status(200).send(result);
   
     });
 
@@ -299,7 +299,7 @@ const buscarUsuario = (req = request, res = response) => {
 
       (err)
         ?res.status(500).send("Ocurrió un error inesperado")
-        :res.status(200).send({listaUsuarios:result});
+        :res.status(200).send(result);
   
     });
 
@@ -309,6 +309,21 @@ const buscarUsuario = (req = request, res = response) => {
     return res.status(500).send(err);
 
   }
+
+}
+
+const getUsuarioRegistrado = (req = request, res = response) => {
+
+  const {usuario} = req.query;
+  const bandera = 2;
+
+  Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, result) => {
+
+    (err)
+      ?res.status(500).send("Ocurrió un error inesperado")
+      :res.status(200).send(result[0]);
+
+  });
 
 }
 
@@ -325,5 +340,6 @@ module.exports = {
   editarAccesoDeUsuario,
   getListaUsuarios,
   buscarUsuario,
+  getUsuarioRegistrado,
   usuauriosDelete
 };

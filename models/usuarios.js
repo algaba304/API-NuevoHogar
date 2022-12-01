@@ -274,9 +274,9 @@ Usuario.getUsuarioPorId = (id, callback) => {
 
 }
 
-Usuario.getCorreo = (correo, callback) => {
+Usuario.getUsuarioPorCorreo = (correo, callback) => {
 
-    const consulta = "SELECT correoElectronico FROM Usuario WHERE correoElectronico = ?";
+    const consulta = "SELECT * FROM Usuario WHERE correoElectronico = ?";
 
     dbConn.query(consulta, correo, (err, res) => {
 
@@ -310,6 +310,10 @@ Usuario.getUsuarioPorNombreDeUsuario = (bandera, nombreUsuario, callback) => {
     if(bandera === 1){
 
         consulta = "SELECT usuario FROM Usuario WHERE usuario = ?";
+
+    }else if(bandera === 2){
+
+        consulta = "SELECT * FROM Usuario WHERE usuario = ? AND estadoUsuario = 'Aceptado'";
 
     }
 
