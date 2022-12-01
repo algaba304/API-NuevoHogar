@@ -9,81 +9,62 @@ const crearUsuario = async (req = request, res = response) => {
   if(!data.idUsuario || data.idUsuario.trim() == "") return res
     .status(400).send({mensaje:"El id del usuario esta vacío"});
 
-  const mensajeCampoVacio = await new Promise((resolve, reject) => {
+  const mensajeValidacion = await new Promise((resolve, reject) => {
 
-    resolve(Usuario.validarCamposVacios(data));
+    var mensaje = Usuario.validarCamposVacios(data);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarTipoDeDato(data);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarTipoDeDatoContadorReportes(data.contadorReportes);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarLimites(data);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarLimiteContadorReportes(data.contadorReportes);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarContrasenia(data.contrasenia);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarFecha(data.fechaNacimiento);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarTelefono(data.numeroTelefono);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarTipoUsuario(data.estadoUsuario, data.idRol);
+
+    if(mensaje) return resolve(mensaje);
+
+    return resolve(null);
 
   });
 
-  if(mensajeCampoVacio) return res
-    .status(409).send({mensaje:mensajeCampoVacio});
-
-  const mensajeTipoDeDatoValidado = await new Promise((resolve, reject) => {
-    
-    resolve(Usuario.validarTipoDeDato(data));
-
-  });
-
-  if(mensajeTipoDeDatoValidado) return res
-    .status(400).send({mensaje:mensajeTipoDeDatoValidado});
-
-  const mensajeValidacionContrasenia = await new Promise((resolve, reject) => {
-    
-    resolve(Usuario.validarContrasenia(data.contrasenia));
-
-  });
-
-  const mensajeValidacionLimite = await new Promise((resolve, reject) => {
-    
-    resolve(Usuario.validarLimites(data));
-
-  });
-
-  if(mensajeValidacionLimite) return res
-    .status(400).send({mensaje:mensajeValidacionLimite});
-
-  if(mensajeValidacionContrasenia) return res
-    .status(400).send({mensaje:mensajeValidacionContrasenia});
+  if(mensajeValidacion !== null) return res.status(409).send({mensaje:mensajeValidacion});
 
   const mensajeValidacionCorreo = await new Promise((resolve, reject) => {
 
-    resolve(Usuario.validarCorreo(data.correoElectronico));
+    return resolve(Usuario.validarCorreo(data.correoElectronico));
     
   });
   
   if(mensajeValidacionCorreo.valid === false) return res
     .status(400).send({mensaje:"El correo no es válido"});
 
-  const mensajeValidacionFecha = await new Promise((resolve, reject) => {
-    
-    resolve(Usuario.validarFecha(data.fechaNacimiento));
-
-  });
-
-  if(mensajeValidacionFecha) return res
-    .status(400).send({mensaje:mensajeValidacionFecha});
-
-  const mensajeValidacionTelefono = await new Promise((resolve, reject) => {
-
-    resolve(Usuario.validarTelefono(data.numeroTelefono));
-
-  });
-  
-  if(mensajeValidacionTelefono) return res
-    .status(400).send({mensaje:mensajeValidacionTelefono});
-  
-  const mensajeValidacionAccesoDelUsuario = await new Promise((resolve, reject) => {
-    
-    resolve(Usuario.validarAccesoDelUsuario(data.estadoUsuario, data.idRol));
-
-  });
-
-  if(mensajeValidacionAccesoDelUsuario) return res
-    .status(400).send({mensaje:mensajeValidacionAccesoDelUsuario});
-
   try{
 
-    const usuarioEncontrado1 = await new Promise((resolve, reject) => {
+    var usuarioEncontrado = await new Promise((resolve, reject) => {
       
       Usuario.getUsuarioPorId(data.idUsuario, (err, usuario) => {
 
@@ -95,18 +76,18 @@ const crearUsuario = async (req = request, res = response) => {
 
     });
 
-    if(usuarioEncontrado1){
+    if(usuarioEncontrado !== null){
 
-      if(usuarioEncontrado1[0].idUsuario) return res
+      if(usuarioEncontrado[0].idUsuario) return res
         .status(409).send({mensaje:"Usuario ya registrado"});
 
     }
 
-    const usuarioEncontrado2 = await new Promise((resolve, reject) => {
+    usuarioEncontrado = await new Promise((resolve, reject) => {
 
-      Usuario.getUsuarioPorCorreo(data.correoElectronico, (err, usuario) => {
+      Usuario.getCorreo(data.correoElectronico, (err, usuario) => {
 
-        (err)
+        return (err)
           ?reject(err)
           :resolve(usuario);
 
@@ -114,16 +95,18 @@ const crearUsuario = async (req = request, res = response) => {
 
     });
 
-    if(usuarioEncontrado2){
+    if(usuarioEncontrado !== null){
 
-      if(usuarioEncontrado2[0].correoElectronico) return res
-        .status(409).send({mensaje:"El correo ya esta registrado"});
+      if(usuarioEncontrado[0].correoElectronico) return res
+        .status(409).send({mensaje:"El correo ya está registrado"});
 
     }
 
-    const usuarioEncontrado3 = await new Promise((resolve, reject) => {
+    usuarioEncontrado = await new Promise((resolve, reject) => {
+
+      const bandera = 1;
       
-      Usuario.getUsuarioPorNombreDeUsuario(data.usuario, (err, usuario) => {
+      Usuario.getUsuarioPorNombreDeUsuario(bandera, data.usuario, (err, usuario) => {
 
         (err)
           ?reject(err)
@@ -133,10 +116,10 @@ const crearUsuario = async (req = request, res = response) => {
 
     });
 
-    if(usuarioEncontrado3){
+    if(usuarioEncontrado !== null){
 
-      if(usuarioEncontrado3[0].usuario) return res
-        .status(409).send({mensaje:"El nombre de usuario ya esta registrado"});
+      if(usuarioEncontrado[0].usuario) return res
+        .status(409).send({mensaje:"El nombre de usuario ya está registrado"});
 
     }
 
@@ -152,8 +135,15 @@ const crearUsuario = async (req = request, res = response) => {
 
     });
 
-    if(resultadoRegistro.affectedRows === 1) return res
-      .status(200).send({mensaje:"Se agregó el usuario exitosamente"});
+    if(resultadoRegistro.affectedRows === 1){
+
+      return res.status(200).send({mensaje:"Se agregó el usuario exitosamente"});
+
+    }else{
+
+      return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+
+    }
 
   }catch(err){
 
@@ -180,29 +170,146 @@ const editarAccesoDeUsuario = async (req = request, res = response) => {
 
   });
 
-  if(resultadoRegistro.affectedRows === 1) return res
-    .status(200).send({mensaje:"Se editó el usuario exitosamente"});
+  if(resultadoRegistro.affectedRows === 1) {
+
+    return res.status(200).send({mensaje:"Se editó el usuario exitosamente"});
+
+  }else{
+
+    return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+
+  }
 
 }
 
-const usuariosPut = (req, res = response) => {
+const editarUsuarioReportado = async (req = request, res = response) => {
+
   const {id} = req.params;
-  res.json({
-      msg:" api PUT desde controlador",
-      id
+  var {contadorReportes} = req.body;
+
+  const mensajeValidacionContadorReportes = await new Promise((resolve, reject) => {
+    
+    var mensaje = Usuario.validarCampoVacioContadorReportes(contadorReportes);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarTipoDeDatoContadorReportes(contadorReportes);
+    
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarLimiteContadorReportes(contadorReportes);
+
+    if(mensaje) return resolve(mensaje);
+
+    resolve(null);
+
   });
+
+  if(mensajeValidacionContadorReportes){
+
+    return res.status(400).send({mensaje:mensajeValidacionContadorReportes});
+
+  }
+
+  try{
+
+    const contadorAnterior = await new Promise((resolve, reject) => {
+      
+      Usuario.getContadorReportes(id, (err, result) => {
+
+        (err)
+          ?reject(err)
+          :resolve(result);
+
+      });
+
+    });
+
+    if(contadorAnterior !== null){
+
+      const contadorEsperado = contadorAnterior[0].contadorReportes + 1;
+
+      if(contadorEsperado !== contadorReportes) contadorReportes = contadorEsperado;
+
+    }else{
+
+      contadorReportes = 1;
+
+    }
+
+    const resultadoRegistro = await new Promise((resolve, reject) => {
+      
+      Usuario.editarUsuarioReportado(id, contadorReportes, (err, result) => {
+
+        (err)
+          ?reject(err)
+          :resolve(result);
+    
+      });
+
+    });
+
+    if(resultadoRegistro.affectedRows === 1){
+
+      return res.status(200).send({mensaje:"Usuario reportado exitosamente"});
+
+    }else{
+
+      return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+
+    }
+
+  }catch(err){
+
+    console.log(err);
+    res.status(500).send(err);
+
+  }
 }
 
 const getListaUsuarios = (req = request, res = response) => {
 
-  Usuario.getListaUsuarios((err, result) => {
+  try{
 
-    (err)
-      ?res.status(400).send(err)
-      :res.status(200).send(result);
+    Usuario.getListaUsuarios((err, result) => {
 
-  });
+      (err)
+        ?res.status(500).send("Ourrió un error inesperado")
+        :res.status(200).send({listaUsuarios:result});
   
+    });
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+  
+}
+
+const buscarUsuario = (req = request, res = response) => {
+
+  const {usuario} = req.params;
+  const bandera = 0;
+
+  try{
+
+    Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, result) => {
+
+      (err)
+        ?res.status(500).send("Ocurrió un error inesperado")
+        :res.status(200).send({listaUsuarios:result});
+  
+    });
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+
 }
 
   const usuauriosDelete = (req = request, res = response) => {
@@ -213,9 +320,10 @@ const getListaUsuarios = (req = request, res = response) => {
   }
 
 module.exports = {
-  getListaUsuarios,
   crearUsuario,
-  usuariosPut,
+  editarUsuarioReportado,
   editarAccesoDeUsuario,
+  getListaUsuarios,
+  buscarUsuario,
   usuauriosDelete
 };
