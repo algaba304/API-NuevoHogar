@@ -248,7 +248,9 @@ Usuario.validarTipoUsuario = (estado, idRol) => {
 
 Usuario.getUsuarioPorId = (id, callback) => {
 
-    dbConn.query("SELECT * FROM Usuario WHERE idUsuario = ?", id, (err, res) => {
+    const consulta = "SELECT * FROM Usuario WHERE idUsuario = ?";
+
+    dbConn.query(consulta, id, (err, res) => {
         
         if(err){
 
@@ -272,9 +274,11 @@ Usuario.getUsuarioPorId = (id, callback) => {
 
 }
 
-Usuario.getUsuarioPorCorreo = (correo, callback) => {
+Usuario.getCorreo = (correo, callback) => {
 
-    dbConn.query("SELECT * FROM Usuario WHERE correoElectronico = ?", correo, (err, res) => {
+    const consulta = "SELECT correoElectronico FROM Usuario WHERE correoElectronico = ?";
+
+    dbConn.query(consulta, correo, (err, res) => {
 
         if(err){
 
@@ -298,9 +302,18 @@ Usuario.getUsuarioPorCorreo = (correo, callback) => {
 
 }
 
-Usuario.getUsuarioPorNombreDeUsuario = (nombreUsuario, callback) => {
+Usuario.getUsuarioPorNombreDeUsuario = (bandera, nombreUsuario, callback) => {
 
-    dbConn.query("SELECT * FROM Usuario WHERE usuario = ?", nombreUsuario, (err, res) => {
+    var consulta = "SELECT * FROM Usuario WHERE usuario = ? AND idRol != 'AD_123_R' " + 
+    "AND estadoUsuario = 'Aceptado'";
+
+    if(bandera === 1){
+
+        consulta = "SELECT usuario FROM Usuario WHERE usuario = ?";
+
+    }
+
+    dbConn.query(consulta, nombreUsuario, (err, res) => {
         
         if(err){
 
@@ -379,8 +392,7 @@ Usuario.borrar = (id, callback) => {
 
 Usuario.getListaUsuarios = (callback) => {
 
-    const consulta = "SELECT idUsuario, usuario, contadorReportes FROM Usuario " + 
-    "WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado'";
+    const consulta = "SELECT * FROM Usuario WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado'";
 
     dbConn.query(consulta, (err, res) => {
 

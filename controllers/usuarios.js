@@ -85,7 +85,7 @@ const crearUsuario = async (req = request, res = response) => {
 
     usuarioEncontrado = await new Promise((resolve, reject) => {
 
-      Usuario.getUsuarioPorCorreo(data.correoElectronico, (err, usuario) => {
+      Usuario.getCorreo(data.correoElectronico, (err, usuario) => {
 
         return (err)
           ?reject(err)
@@ -103,8 +103,10 @@ const crearUsuario = async (req = request, res = response) => {
     }
 
     usuarioEncontrado = await new Promise((resolve, reject) => {
+
+      const bandera = 1;
       
-      Usuario.getUsuarioPorNombreDeUsuario(data.usuario, (err, usuario) => {
+      Usuario.getUsuarioPorNombreDeUsuario(bandera, data.usuario, (err, usuario) => {
 
         (err)
           ?reject(err)
@@ -168,8 +170,15 @@ const editarAccesoDeUsuario = async (req = request, res = response) => {
 
   });
 
-  if(resultadoRegistro.affectedRows === 1) return res
-    .status(200).send({mensaje:"Se editó el usuario exitosamente"});
+  if(resultadoRegistro.affectedRows === 1) {
+
+    return res.status(200).send({mensaje:"Se editó el usuario exitosamente"});
+
+  }else{
+
+    return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+
+  }
 
 }
 
@@ -260,14 +269,47 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 
 const getListaUsuarios = (req = request, res = response) => {
 
-  Usuario.getListaUsuarios((err, result) => {
+  try{
 
-    (err)
-      ?res.status(500).send(err)
-      :res.status(200).send(result);
+    Usuario.getListaUsuarios((err, result) => {
 
-  });
+      (err)
+        ?res.status(500).send("Ourrió un error inesperado")
+        :res.status(200).send({listaUsuarios:result});
   
+    });
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+  
+}
+
+const buscarUsuario = (req = request, res = response) => {
+
+  const {usuario} = req.params;
+  const bandera = 0;
+
+  try{
+
+    Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, result) => {
+
+      (err)
+        ?res.status(500).send("Ocurrió un error inesperado")
+        :res.status(200).send({listaUsuarios:result});
+  
+    });
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+
 }
 
   const usuauriosDelete = (req = request, res = response) => {
@@ -282,5 +324,6 @@ module.exports = {
   editarUsuarioReportado,
   editarAccesoDeUsuario,
   getListaUsuarios,
+  buscarUsuario,
   usuauriosDelete
 };
