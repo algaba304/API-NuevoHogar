@@ -85,7 +85,7 @@ const crearUsuario = async (req = request, res = response) => {
 
     usuarioEncontrado = await new Promise((resolve, reject) => {
 
-      Usuario.getCorreo(data.correoElectronico, (err, usuario) => {
+      Usuario.getUsuarioPorCorreo(data.correoElectronico, (err, usuario) => {
 
         return (err)
           ?reject(err)
@@ -205,7 +205,7 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 
   });
 
-  if(mensajeValidacionContadorReportes){
+  if(mensajeValidacionContadorReportes !== null){
 
     return res.status(400).send({mensaje:mensajeValidacionContadorReportes});
 
@@ -215,11 +215,11 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 
     const contadorAnterior = await new Promise((resolve, reject) => {
       
-      Usuario.getContadorReportes(id, (err, result) => {
+      Usuario.getContadorReportes(id, (err, contador) => {
 
         (err)
           ?reject(err)
-          :resolve(result);
+          :resolve(contador);
 
       });
 
@@ -271,11 +271,21 @@ const getListaUsuarios = (req = request, res = response) => {
 
   try{
 
-    Usuario.getListaUsuarios((err, result) => {
+    Usuario.getListaUsuarios((err, lista) => {
 
-      (err)
-        ?res.status(500).send("Ourrió un error inesperado")
-        :res.status(200).send(result);
+      if(err){
+
+        return res.status(500).send("Ourrió un error inesperado");
+
+      }else if(lista !== null){
+
+        return res.status(200).send(lista);
+
+      }else{
+
+        return res.status(204).send();
+
+      }
   
     });
 
@@ -295,11 +305,21 @@ const buscarUsuario = (req = request, res = response) => {
 
   try{
 
-    Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, result) => {
+    Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, usuarioObtenido) => {
 
-      (err)
-        ?res.status(500).send("Ocurrió un error inesperado")
-        :res.status(200).send(result);
+      if(err){
+
+        return res.status(500).send("Ocurrió un error inesperado");
+
+      }else if(usuarioObtenido !== null){
+
+        return res.status(200).send(usuarioObtenido);
+
+      }else{
+
+        return res.status(204).send();
+
+      }
   
     });
 
@@ -317,13 +337,93 @@ const getUsuarioRegistrado = (req = request, res = response) => {
   const {usuario} = req.query;
   const bandera = 2;
 
-  Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, result) => {
+  try{
 
-    (err)
-      ?res.status(500).send("Ocurrió un error inesperado")
-      :res.status(200).send(result[0]);
+    Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, usuarioObtenido) => {
 
-  });
+      if(err){
+  
+        return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+  
+      }else if(usuarioObtenido !== null){
+  
+        return res.status(200).send(usuarioObtenido[0]);
+  
+      }else{
+  
+        return res.status(204).send();
+  
+      }
+  
+    });
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+
+}
+
+const consultarListaEnlacesDonacion = async (req = request, res = response) => {
+
+  const {id} = req.params;
+
+  try{
+
+    const usuarioEncontrado = await new Promise((resolve, reject) => {
+    
+      Usuario.getUsuarioPorId(id, (err, usuario) => {
+  
+        (err)
+          ?reject(err)
+          :resolve(usuario);
+  
+      });
+  
+    });
+  
+    if(usuarioEncontrado === null){
+
+      return res.status(400).send({mensaje:"Recurso inexistente"});
+  
+    }
+
+    if(usuarioEncontrado[0].idRol !== "RF_123_R"){
+
+      return res.status(400).send({mensaje:"Este usuario no tiene acceso a este recurso"});
+
+    }
+
+    const resultadoRegistro = await new Promise((resolve, reject) => {
+        
+      Usuario.getListaEnlacesDonacion(id, (err, lista) => {
+
+        (err)
+          ?reject(err)
+          :resolve(lista);
+
+      });
+
+    });
+
+    if(resultadoRegistro !== null){
+
+        return res.status(200).send(resultadoRegistro);
+
+    }else{
+
+      return res.status(204).send();
+
+    }
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
 
 }
 
@@ -341,5 +441,6 @@ module.exports = {
   getListaUsuarios,
   buscarUsuario,
   getUsuarioRegistrado,
+  consultarListaEnlacesDonacion,
   usuauriosDelete
 };
