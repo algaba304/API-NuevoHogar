@@ -390,7 +390,7 @@ const consultarListaEnlacesDonacion = async (req = request, res = response) => {
   
     }
 
-    if(usuarioEncontrado[0].idRol !== "RF_123_R"){
+    if(usuarioEncontrado[0].idRol !== "RF_123_R" || usuarioEncontrado[0].estadoUsuario !== "Aceptado"){
 
       return res.status(400).send({mensaje:"Este usuario no tiene acceso a este recurso"});
 
@@ -399,6 +399,67 @@ const consultarListaEnlacesDonacion = async (req = request, res = response) => {
     const resultadoRegistro = await new Promise((resolve, reject) => {
         
       Usuario.getListaEnlacesDonacion(id, (err, lista) => {
+
+        (err)
+          ?reject(err)
+          :resolve(lista);
+
+      });
+
+    });
+
+    if(resultadoRegistro !== null){
+
+        return res.status(200).send(resultadoRegistro);
+
+    }else{
+
+      return res.status(204).send();
+
+    }
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+
+}
+
+const consultarListaRedesSociales = async (req = request, res = response) => {
+
+  const {id} = req.params;
+
+  try{
+
+    const usuarioEncontrado = await new Promise((resolve, reject) => {
+    
+      Usuario.getUsuarioPorId(id, (err, usuario) => {
+  
+        (err)
+          ?reject(err)
+          :resolve(usuario);
+  
+      });
+  
+    });
+  
+    if(usuarioEncontrado === null){
+
+      return res.status(400).send({mensaje:"Recurso inexistente"});
+  
+    }
+
+    if(usuarioEncontrado[0].idRol !== "RF_123_R" || usuarioEncontrado[0].estadoUsuario !== "Aceptado"){
+
+      return res.status(400).send({mensaje:"Este usuario no tiene acceso a este recurso"});
+
+    }
+
+    const resultadoRegistro = await new Promise((resolve, reject) => {
+        
+      Usuario.getListaRedesSociales(id, (err, lista) => {
 
         (err)
           ?reject(err)
@@ -442,5 +503,6 @@ module.exports = {
   buscarUsuario,
   getUsuarioRegistrado,
   consultarListaEnlacesDonacion,
+  consultarListaRedesSociales,
   usuauriosDelete
 };

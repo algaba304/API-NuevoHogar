@@ -7,6 +7,7 @@ const {
     buscarUsuario,
     getUsuarioRegistrado,
     consultarListaEnlacesDonacion,
+    consultarListaRedesSociales,
     usuauriosDelete} = require('../controllers/usuarios');
 
 const router = Router();
@@ -18,6 +19,8 @@ router.get('/sesion', getUsuarioRegistrado);
 router.get('/:usuario/reportados', buscarUsuario);
 
 router.get('/:id/donaciones', consultarListaEnlacesDonacion);
+
+router.get('/:id/redesSociales', consultarListaRedesSociales);
   
 router.post('/', crearUsuario);  
 
