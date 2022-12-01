@@ -269,13 +269,15 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 
 const getListaUsuarios = (req = request, res = response) => {
 
+  const bandera = 0;
+
   try{
 
-    Usuario.getListaUsuarios((err, result) => {
+    Usuario.getListaUsuarios(bandera, (err, lista) => {
 
       (err)
         ?res.status(500).send("Ourrió un error inesperado")
-        :res.status(200).send(result);
+        :res.status(200).send(lista);
   
     });
 
