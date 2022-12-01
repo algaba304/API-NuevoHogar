@@ -274,9 +274,9 @@ Usuario.getUsuarioPorId = (id, callback) => {
 
 }
 
-Usuario.getCorreo = (correo, callback) => {
+Usuario.getUsuarioPorCorreo = (correo, callback) => {
 
-    const consulta = "SELECT correoElectronico FROM Usuario WHERE correoElectronico = ?";
+    const consulta = "SELECT * FROM Usuario WHERE correoElectronico = ?";
 
     dbConn.query(consulta, correo, (err, res) => {
 
@@ -310,6 +310,10 @@ Usuario.getUsuarioPorNombreDeUsuario = (bandera, nombreUsuario, callback) => {
     if(bandera === 1){
 
         consulta = "SELECT usuario FROM Usuario WHERE usuario = ?";
+
+    }else if(bandera === 2){
+
+        consulta = "SELECT * FROM Usuario WHERE usuario = ? AND estadoUsuario = 'Aceptado'";
 
     }
 
@@ -365,9 +369,23 @@ Usuario.getContadorReportes = (id, callback) => {
 
     dbConn.query("SELECT contadorReportes FROM Usuario WHERE idUsuario = ?", id, (err, res) => {
 
-        (err)
-            ?callback(err, null)
-            :callback(null, res);
+        if(err){
+
+            return callback(err, null);
+
+        }else if(res.length > 0){
+
+            return callback(null, res);
+
+        }else if(res[0]){
+
+            return callback(null, res);
+
+        }else{
+
+            return callback(null, null);
+
+        }
 
     });
 
@@ -396,9 +414,53 @@ Usuario.getListaUsuarios = (callback) => {
 
     dbConn.query(consulta, (err, res) => {
 
-        (err)
-            ?callback(err, null)
-            :callback(null, res);
+        if(err){
+
+            return callback(err, null);
+
+        }else if(res.length > 0){
+
+            return callback(null, res);
+
+        }else if(res[0]){
+
+            return callback(null, res);
+
+        }else{
+
+            return callback(null, null);
+
+        }
+
+    });
+
+}
+
+Usuario.getListaEnlacesDonacion = (id, callback) => {
+
+    const consulta = "SELECT e.idEnlaceDonacion, e.enlace, e.idMetodoDonacion, m.metodo " + 
+    "FROM EnlaceDonacion e LEFT JOIN MetodoDonacion m ON e.idMetodoDonacion = m.idMetoDonacion " + 
+    "WHERE e.idRefugio = ?";
+
+    dbConn.query(consulta, id, (err, res) => {
+
+        if(err){
+
+            return callback(err, null);
+
+        }else if(res.length > 0){
+
+            return callback(null, res);
+
+        }else if(res[0]){
+
+            return callback(null, res);
+
+        }else{
+
+            return callback(null, null);
+
+        }
 
     });
 
