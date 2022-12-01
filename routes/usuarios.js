@@ -4,11 +4,14 @@ const {
     editarUsuarioReportado, 
     editarAccesoDeUsuario,
     getListaUsuarios, 
+    buscarUsuario,
     usuauriosDelete} = require('../controllers/usuarios');
 
 const router = Router();
 
 router.get('/', getListaUsuarios); 
+
+router.get('/:usuario/reportados', buscarUsuario);
   
 router.post('/', crearUsuario);  
 
