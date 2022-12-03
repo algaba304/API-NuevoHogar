@@ -157,26 +157,55 @@ const crearUsuario = async (req = request, res = response) => {
 const editarAccesoDeUsuario = async (req = request, res = response) => {
 
   const {id} = req.params;
+  const {estadoUsuario} = req.body;
 
-  const resultadoRegistro = await new Promise((resolve, reject) => {
+  try{
 
-    Usuario.editarAcceso(id, data.estadoUsuario, (err, result) => {
+    const usuarioEncontrado = await new Promise((resolve, reject) => {
+      
+      Usuario.getUsuarioPorId(id, (err, usuario) => {
 
-      (err)
-        ?reject(err)
-        :resolve(result);
+        (err)
+          ?reject(err)
+          :resolve(usuario);
+
+      });
 
     });
 
-  });
+    if(usuarioEncontrado !== null) {
+      
+      if(usuarioEncontrado[0].idRol !== "RF_123_R") return res
+        .status(404).send({mensaje:"Recurso inexistente"});
 
-  if(resultadoRegistro.affectedRows === 1) {
+    }
 
-    return res.status(200).send({mensaje:"Se editó el usuario exitosamente"});
+    const resultadoRegistro = await new Promise((resolve, reject) => {
 
-  }else{
+      Usuario.editarAcceso(id, estadoUsuario, (err, result) => {
+  
+        (err)
+          ?reject(err)
+          :resolve(result);
+  
+      });
+  
+    });
+  
+    if(resultadoRegistro.affectedRows === 1){
+  
+      return res.status(200).send({mensaje:"Se editó el usuario exitosamente"});
+  
+    }else{
+  
+      return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+  
+    }
 
-    return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
 
   }
 

@@ -9,7 +9,7 @@ const getListaRefugios = (req = request, res = response) => {
 
         Usuario.getListaUsuarios(bandera, (err, lista) => {
 
-            if(err) return res.status(500).send("Ocurrió un error inesperado");
+            if(err) return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
 
             if(lista !== null) return res.status(200).send(lista);
 
