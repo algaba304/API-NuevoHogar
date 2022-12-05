@@ -31,7 +31,7 @@ class Server{
     routes(){
         this.app.use('/api/usuarios', require('../routes/usuarios'));
         this.app.use('/api/escuelas', require('../routes/escuelas'));
-        this.app.use('/api/refugios', require('../routes/administrador'));
+        this.app.use('/api/administradores', require('../routes/administradores'));
         this.app.use('/api/sesion', require('../routes/sesion'));
     }
 

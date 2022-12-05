@@ -1,20 +1,74 @@
 const {response, request} = require('express');
 const Usuario = require('../models/usuarios');
 
-const getListaRefugios = (req = request, res = response) => {
+const getListaRefugios = async (req = request, res = response) => {
 
+    const {id} = req.params;
     const bandera = 1;
+
+    await getListaGenerica(res, id, bandera);
+
+}
+
+const getListaUsuariosReportados = async (req = request, res = response) => {
+
+    const {id} = req.params;
+    const bandera = 2;
+
+    await getListaGenerica(res, id, bandera);
+
+}
+
+const getListaGenerica = async (res, id, bandera) => {
 
     try{
 
-        Usuario.getListaUsuarios(bandera, (err, lista) => {
+        const usuarioEncontrado = await new Promise((resolve, reject) => {
+            
+            Usuario.getUsuarioPorId(id, (err, usuario) => {
 
-            if(err) return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+                (err)
+                    ?reject(err)
+                    :resolve(usuario);
 
-            if(lista !== null) return res.status(200).send(lista);
+            });
 
-            return res.status(204).send();
-        })
+        });
+
+        if(usuarioEncontrado.errno > 0) return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+
+        if(usuarioEncontrado !== null){
+
+            if(usuarioEncontrado[0].idRol !== "AD_123_R") return res
+                .status(404).send("Recurso inexistente");
+
+        }else{
+
+            return res.status(404).send("Recurso inexistente");
+
+        }
+
+        const listaObtenida = await new Promise((resolve, reject) => {
+            
+            Usuario.getListaUsuarios(bandera, (err, lista) => {
+
+                (err)
+                    ?reject(err)
+                    :resolve(lista);
+
+            });
+
+        });
+
+        if(listaObtenida !== null){
+
+            if(listaObtenida.errno > 0) return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+
+            return res.status(200).send(listaObtenida);
+
+        }
+
+        return res.status(204).send();
 
     }catch(err){
 
@@ -26,5 +80,6 @@ const getListaRefugios = (req = request, res = response) => {
 }
 
 module.exports = {
-    getListaRefugios
+    getListaRefugios,
+    getListaUsuariosReportados
 }
