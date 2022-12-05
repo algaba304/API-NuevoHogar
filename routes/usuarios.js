@@ -5,7 +5,6 @@ const {
     editarAccesoDeUsuario,
     getListaUsuarios, 
     buscarUsuario,
-    getUsuarioRegistrado,
     consultarListaEnlacesDonacion,
     consultarListaRedesSociales,
     usuauriosDelete} = require('../controllers/usuarios');
@@ -13,8 +12,6 @@ const {
 const router = Router();
 
 router.get('/', getListaUsuarios); 
-
-router.get('/sesion', getUsuarioRegistrado);
 
 router.get('/:usuario/reportados', buscarUsuario);
 
@@ -24,10 +21,10 @@ router.get('/:id/redesSociales', consultarListaRedesSociales);
   
 router.post('/', crearUsuario);  
 
-router.put('/:id/estados', editarAccesoDeUsuario);
-
 router.put('/:id/reportados', editarUsuarioReportado);
 
 router.delete('/:id', usuauriosDelete);  
+
+router.put('/:id/estados', editarAccesoDeUsuario);
 
 module.exports = router;

@@ -1,6 +1,9 @@
 const {response, request} = require('express');
 const Usuario = require('../models/usuarios');
 
+const error404 = "Recurso inexistente";
+const error500 = "Ocurrión un error inesperado";
+
 const crearUsuario = async (req = request, res = response) => {
 
   let data = req.body;
@@ -157,26 +160,107 @@ const crearUsuario = async (req = request, res = response) => {
 const editarAccesoDeUsuario = async (req = request, res = response) => {
 
   const {id} = req.params;
+  const {estadoUsuario} = req.body;
 
-  const resultadoRegistro = await new Promise((resolve, reject) => {
+  try{
 
-    Usuario.editarAcceso(id, data.estadoUsuario, (err, result) => {
+    const usuarioEncontrado = await new Promise((resolve, reject) => {
+      
+      Usuario.getUsuarioPorId(id, (err, usuario) => {
 
-      (err)
-        ?reject(err)
-        :resolve(result);
+        (err)
+          ?reject(err)
+          :resolve(usuario);
+
+      });
 
     });
 
-  });
+    if(usuarioEncontrado.errno > 0) return res.status(500).send({mensaje:error500});
 
-  if(resultadoRegistro.affectedRows === 1) {
+    if(usuarioEncontrado !== null) {
+      
+      if(usuarioEncontrado[0].idRol === "AD_123_R") return res
+        .status(404).send({mensaje:error404});
 
-    return res.status(200).send({mensaje:"Se editó el usuario exitosamente"});
+    }else{
 
-  }else{
+      return res.status(404).send({mensaje:error404})
 
-    return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+    }
+
+    //falta validar que sea el administrador
+    if(usuarioEncontrado[0].idRol === "RF_123_R" && estadoUsuario.trim() === "Aceptado"){
+
+      if(usuarioEncontrado[0].estadoUsuario === "En espera"){
+
+        return await editarAccesoGenerico(res, id, estadoUsuario.trim());
+
+      }else{
+
+        return res.status(409).send({mensaje:"Busca un refugio que tenga el estado 'En espera' para aceptarlo"});
+
+      }
+
+    }else if(estadoUsuario.trim() === "Bloqueado"){
+
+      if(usuarioEncontrado[0].estadoUsuario === "Aceptado"){
+
+        return await editarAccesoGenerico(res, id, estadoUsuario.trim());
+
+      }else{
+
+        return res.status(409).send({mensaje:"Busca un usuario que tenga el estado 'Aceptado' para bloquearlo"});
+
+      }
+
+    }else if(usuarioEncontrado[0].idRol === "RF_123_R" && estadoUsuario === "En espera"){
+
+      return res.status(400).send({mensaje:"El refugio no puede recibir este estado"});
+
+    }
+    
+    return res.status(400).send({mensaje:"El animalista no puede recibir el estado 'Aceptado' o 'En espera'"});
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+
+}
+
+const editarAccesoGenerico = async (res, id, estadoUsuario) => {
+
+  try{
+
+    const resultadoRegistro = await new Promise((resolve, reject) => {
+
+      Usuario.editarAcceso(id, estadoUsuario, (err, result) => {
+  
+        (err)
+          ?reject(err)
+          :resolve(result);
+  
+      });
+  
+    });
+  
+    if(resultadoRegistro.affectedRows === 1){
+  
+      return res.status(200).send({mensaje:"Se editó el usuario exitosamente"});
+  
+    }else{
+  
+      return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+  
+    }
+
+  }catch(err){
+
+    console.group(err);
+    return res.status(500).send({mensaje:error500});
 
   }
 
@@ -268,6 +352,8 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 }
 
 const getListaUsuarios = (req = request, res = response) => {
+
+  const bandera = 0;
 
   try{
 

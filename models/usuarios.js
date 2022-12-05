@@ -408,9 +408,14 @@ Usuario.borrar = (id, callback) => {
     });
 }
 
-Usuario.getListaUsuarios = (callback) => {
+Usuario.getListaUsuarios = (bandera, callback) => {
 
-    const consulta = "SELECT * FROM Usuario WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado'";
+    var consulta = "SELECT * FROM Usuario WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado'";
+
+    if(bandera === 1) consulta = "SELECT * FROM Usuario WHERE idRol = 'RF_123_R' AND estadoUsuario = 'En espera'";
+    
+    if( bandera === 2) consulta = "SELECT * FROM Usuario WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado' " + 
+        "AND contadorReportes > 0";
 
     dbConn.query(consulta, (err, res) => {
 
