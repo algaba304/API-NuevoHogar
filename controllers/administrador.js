@@ -1,6 +1,9 @@
 const {response, request} = require('express');
 const Usuario = require('../models/usuarios');
 
+const error404 = "Recurso inexistente";
+const error500 = "Ocurrión un error inesperado";
+
 const getListaRefugios = async (req = request, res = response) => {
 
     const {id} = req.params;
@@ -35,16 +38,16 @@ const getListaGenerica = async (res, id, bandera) => {
 
         });
 
-        if(usuarioEncontrado.errno > 0) return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+        if(usuarioEncontrado.errno > 0) return res.status(500).send({mensaje:error500});
 
         if(usuarioEncontrado !== null){
 
             if(usuarioEncontrado[0].idRol !== "AD_123_R") return res
-                .status(404).send("Recurso inexistente");
+                .status(404).send({mensaje:error404});
 
         }else{
 
-            return res.status(404).send("Recurso inexistente");
+            return res.status(404).send({mensaje:error404});
 
         }
 
@@ -62,7 +65,7 @@ const getListaGenerica = async (res, id, bandera) => {
 
         if(listaObtenida !== null){
 
-            if(listaObtenida.errno > 0) return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+            if(listaObtenida.errno > 0) return res.status(500).send({mensaje:error500});
 
             return res.status(200).send(listaObtenida);
 

@@ -1,6 +1,9 @@
 const {response, request} = require('express');
 const Usuario = require('../models/usuarios');
 
+const error404 = "Recurso inexistente";
+const error500 = "Ocurrión un error inesperado";
+
 const crearUsuario = async (req = request, res = response) => {
 
   let data = req.body;
@@ -173,12 +176,64 @@ const editarAccesoDeUsuario = async (req = request, res = response) => {
 
     });
 
+    if(usuarioEncontrado.errno > 0) return res.status(500).send({mensaje:error500});
+
     if(usuarioEncontrado !== null) {
       
-      if(usuarioEncontrado[0].idRol !== "RF_123_R") return res
-        .status(404).send({mensaje:"Recurso inexistente"});
+      if(usuarioEncontrado[0].idRol === "AD_123_R") return res
+        .status(404).send({mensaje:error404});
+
+    }else{
+
+      return res.status(404).send({mensaje:error404})
 
     }
+
+    //falta validar que sea el administrador
+    if(usuarioEncontrado[0].idRol === "RF_123_R" && estadoUsuario.trim() === "Aceptado"){
+
+      if(usuarioEncontrado[0].estadoUsuario === "En espera"){
+
+        return await editarAccesoGenerico(res, id, estadoUsuario.trim());
+
+      }else{
+
+        return res.status(409).send({mensaje:"Busca un refugio que tenga el estado 'En espera' para aceptarlo"});
+
+      }
+
+    }else if(estadoUsuario.trim() === "Bloqueado"){
+
+      if(usuarioEncontrado[0].estadoUsuario === "Aceptado"){
+
+        return await editarAccesoGenerico(res, id, estadoUsuario.trim());
+
+      }else{
+
+        return res.status(409).send({mensaje:"Busca un usuario que tenga el estado 'Aceptado' para bloquearlo"});
+
+      }
+
+    }else if(usuarioEncontrado[0].idRol === "RF_123_R" && estadoUsuario === "En espera"){
+
+      return res.status(400).send({mensaje:"El refugio no puede recibir este estado"});
+
+    }
+    
+    return res.status(400).send({mensaje:"El animalista no puede recibir el estado 'Aceptado' o 'En espera'"});
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+
+}
+
+const editarAccesoGenerico = async (res, id, estadoUsuario) => {
+
+  try{
 
     const resultadoRegistro = await new Promise((resolve, reject) => {
 
@@ -204,8 +259,8 @@ const editarAccesoDeUsuario = async (req = request, res = response) => {
 
   }catch(err){
 
-    console.log(err);
-    return res.status(500).send(err);
+    console.group(err);
+    return res.status(500).send({mensaje:error500});
 
   }
 
