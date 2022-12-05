@@ -85,7 +85,7 @@ const crearUsuario = async (req = request, res = response) => {
 
     usuarioEncontrado = await new Promise((resolve, reject) => {
 
-      Usuario.getCorreo(data.correoElectronico, (err, usuario) => {
+      Usuario.getUsuarioPorCorreo(data.correoElectronico, (err, usuario) => {
 
         return (err)
           ?reject(err)

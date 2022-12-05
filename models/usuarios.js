@@ -369,9 +369,23 @@ Usuario.getContadorReportes = (id, callback) => {
 
     dbConn.query("SELECT contadorReportes FROM Usuario WHERE idUsuario = ?", id, (err, res) => {
 
-        (err)
-            ?callback(err, null)
-            :callback(null, res);
+        if(err){
+
+            return callback(err, null);
+
+        }else if(res.length > 0){
+
+            return callback(null, res);
+
+        }else if(res[0]){
+
+            return callback(null, res);
+
+        }else{
+
+            return callback(null, null);
+
+        }
 
     });
 
@@ -398,17 +412,30 @@ Usuario.getListaUsuarios = (bandera, callback) => {
 
     var consulta = "SELECT * FROM Usuario WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado'";
 
-    if(bandera === 1){
-
-        consulta = "SELECT * FROM Usuario WHERE idRol = 'RF_123_R' AND estadoUsuario = 'En espera'";
-
-    }
+    if(bandera === 1) consulta = "SELECT * FROM Usuario WHERE idRol = 'RF_123_R' AND estadoUsuario = 'En espera'";
+    
+    if( bandera === 2) consulta = "SELECT * FROM Usuario WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado' " + 
+        "AND contadorReportes > 0";
 
     dbConn.query(consulta, (err, res) => {
 
-        (err)
-            ?callback(err, null)
-            :callback(null, res);
+        if(err){
+
+            return callback(err, null);
+
+        }else if(res.length > 0){
+
+            return callback(null, res);
+
+        }else if(res[0]){
+
+            return callback(null, res);
+
+        }else{
+
+            return callback(null, null);
+
+        }
 
     });
 
