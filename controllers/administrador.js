@@ -1,49 +1,43 @@
-const {response, request} = require('express');
+const { response, request } = require('express');
 const Usuario = require('../models/usuarios');
+const { autenticarUsuario } = require('../controllers/autenticacion');
+const { editarAccesoGenerico } = require('../controllers/autorizacion');
+const { getUsuarioPorId } = require('../controllers/usuarios');
+const { validarEntradaEstadoUsuario } = require('./validaciones');
 
 const error404 = "Recurso inexistente";
 const error500 = "Ocurrión un error inesperado";
 
 const getListaRefugios = async (req = request, res = response) => {
 
-    const {id} = req.params;
+    const { id } = req.params;
     const bandera = 1;
+    const usuarioAutenticado = await autenticarUsuario(req, res);
 
-    await getListaGenerica(res, id, bandera);
+    await getListaGenerica(res, id, bandera, usuarioAutenticado);
 
 }
 
 const getListaUsuariosReportados = async (req = request, res = response) => {
 
-    const {id} = req.params;
+    const { id } = req.params;
     const bandera = 2;
+    const usuarioAutenticado = await autenticarUsuario(req, res);
 
-    await getListaGenerica(res, id, bandera);
+    await getListaGenerica(res, id, bandera, usuarioAutenticado);
 
 }
 
-const getListaGenerica = async (res, id, bandera) => {
+const getListaGenerica = async (res, id, bandera, usuarioAutenticado) => {
 
     try{
 
-        const usuarioEncontrado = await new Promise((resolve, reject) => {
-            
-            Usuario.getUsuarioPorId(id, (err, usuario) => {
-
-                (err)
-                    ?reject(err)
-                    :resolve(usuario);
-
-            });
-
-        });
-
-        if(usuarioEncontrado.errno > 0) return res.status(500).send({mensaje:error500});
+        const usuarioEncontrado = await getUsuarioPorId(res, id);
 
         if(usuarioEncontrado !== null){
 
-            if(usuarioEncontrado[0].idRol !== "AD_123_R") return res
-                .status(404).send({mensaje:error404});
+            if(usuarioEncontrado.idRol !== "AD_123_R") return res
+            .status(404).send({mensaje:error404});
 
         }else{
 
@@ -51,27 +45,31 @@ const getListaGenerica = async (res, id, bandera) => {
 
         }
 
-        const listaObtenida = await new Promise((resolve, reject) => {
+        if(usuarioAutenticado.idRol === "AD_123_R"){
+
+            const listaObtenida = await new Promise((resolve, reject) => {
             
-            Usuario.getListaUsuarios(bandera, (err, lista) => {
-
-                (err)
-                    ?reject(err)
-                    :resolve(lista);
-
+                Usuario.getListaUsuarios(bandera, (err, lista) => {
+    
+                    if(err) return res.status(500).send({mensaje:error500});
+    
+                    resolve(lista);
+    
+                });
+    
             });
-
-        });
-
-        if(listaObtenida !== null){
-
-            if(listaObtenida.errno > 0) return res.status(500).send({mensaje:error500});
-
-            return res.status(200).send(listaObtenida);
+    
+            if(listaObtenida !== null){
+    
+                return res.status(200).send(listaObtenida);
+    
+            }
+    
+            return res.status(204).send();
 
         }
 
-        return res.status(204).send();
+        return res.status(401).send({ mensaje:"El usuario no tiene permiso para consultar" });
 
     }catch(err){
 
@@ -82,7 +80,112 @@ const getListaGenerica = async (res, id, bandera) => {
 
 }
 
+const editarSolicitudRefugio = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    var { estadoUsuario } = req.body;
+    estadoUsuario = estadoUsuario.trim();
+
+    const usuarioEncontrado = await getUsuarioPorId(res, id);
+    
+    if(usuarioEncontrado !== null) {
+        
+        if(usuarioEncontrado.idRol === "AD_123_R" || usuarioEncontrado.idRol === "AN_123_R") return res
+        .status(404).send({ mensaje:error404 });
+
+        if(usuarioEncontrado.idRol === "RF_123_R") {
+
+            if(usuarioEncontrado.estadoUsuario !== "En espera") return res.status(404).send({ mensaje:error404 });
+
+        }
+
+    }else{
+
+        return res.status(404).send({ mensaje:error404 });
+
+    }
+
+    const usuarioAutenticado = await autenticarUsuario(req, res);
+    const mensajeValidacion = await validarEntradaEstadoUsuario(estadoUsuario);
+
+    if(mensajeValidacion !== null) return res.status(400).send({ mensaje:mensajeValidacion });
+    
+    if(usuarioAutenticado.idRol === "AD_123_R"){
+
+        if(estadoUsuario === "Aceptado"){
+
+            return await editarAccesoGenerico(res, id, estadoUsuario);
+    
+        }else{
+
+            return res.status(400).send({ mensaje:"El estado ingresado debe ser 'Aceptado" });
+    
+        }
+
+    }
+
+    return res.status(401).send({ mensaje:"No tiene permiso para realizar este cambio" });
+
+}
+
+const bloquearUsuario = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    var { estadoUsuario } = req.body;
+    estadoUsuario = estadoUsuario.trim();
+    /*
+    const resultado = await new Promise((resolve, reject) => {
+        Usuario.editarAccesoDeUsuario(id, estadoUsuario, (err, result) => {
+            if(err) return res.status(500).send("Ocurrio un error inesperado");
+            resolve(result);
+        });
+    });
+    if(resultado.affectedRows === 1){
+        return res.status(200).send("OK");
+    }else{
+        return res.status(500).send("Ocurrio un error inesperado");
+    }
+    */
+    const usuarioEncontrado = await getUsuarioPorId(res, id);
+    
+    if(usuarioEncontrado !== null) {
+        
+        if(usuarioEncontrado.idRol === "AD_123_R") return res.status(404).send({ mensaje:error404 });
+
+        if(usuarioEncontrado.estadoUsuario !== "Aceptado") return res.status(404).send({ mensaje:error404 });
+
+    }else{
+
+        return res.status(404).send({ mensaje:error404 });
+
+    }
+
+    const usuarioAutenticado = await autenticarUsuario(req, res);
+    const mensajeValidacion = await validarEntradaEstadoUsuario(estadoUsuario);
+
+    if(mensajeValidacion !== null) return res.status(400).send({ mensaje:mensajeValidacion });
+    
+    if(usuarioAutenticado.idRol === "AD_123_R"){
+
+        if(estadoUsuario === "Bloqueado"){
+
+            return await editarAccesoGenerico(res, id, estadoUsuario);
+    
+        }else{
+    
+            return res.status(400).send({ mensaje:"El estado ingresado debe ser 'Bloqueado'" });
+    
+        }
+
+    }
+
+    return res.status(401).send({ mensaje:"No tiene permiso para realizar este cambio" });
+
+}
+
 module.exports = {
     getListaRefugios,
-    getListaUsuariosReportados
+    getListaUsuariosReportados,
+    bloquearUsuario,
+    editarSolicitudRefugio
 }

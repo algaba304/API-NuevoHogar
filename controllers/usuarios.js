@@ -1,5 +1,8 @@
-const {response, request} = require('express');
+const { response, request } = require('express');
 const Usuario = require('../models/usuarios');
+const { autenticarUsuario } = require('../controllers/autenticacion');
+const { editarAccesoGenerico } = require('../controllers/autorizacion');
+const { validarEntradaEstadoUsuario } = require('../controllers/validaciones');
 
 const error404 = "Recurso inexistente";
 const error500 = "Ocurrión un error inesperado";
@@ -7,7 +10,7 @@ const error500 = "Ocurrión un error inesperado";
 const crearUsuario = async (req = request, res = response) => {
 
   let data = req.body;
-  data.idRol = `${req.body.idRol.idRol}`;
+  data.idRol = `${ req.body.idRol.idRol }`;
 
   if(!data.idUsuario || data.idUsuario.trim() == "") return res
     .status(400).send({mensaje:"El id del usuario esta vacío"});
@@ -15,6 +18,10 @@ const crearUsuario = async (req = request, res = response) => {
   const mensajeValidacion = await new Promise((resolve, reject) => {
 
     var mensaje = Usuario.validarCamposVacios(data);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarCampoVacioContadorReportes(data.contadorReportes);
 
     if(mensaje) return resolve(mensaje);
 
@@ -31,6 +38,10 @@ const crearUsuario = async (req = request, res = response) => {
     if(mensaje) return resolve(mensaje);
 
     mensaje = Usuario.validarLimiteContadorReportes(data.contadorReportes);
+
+    if(mensaje) return resolve(mensaje);
+
+    mensaje = Usuario.validarEntradaEstadoUsuario(data.estadoUsuario);
 
     if(mensaje) return resolve(mensaje);
 
@@ -67,17 +78,7 @@ const crearUsuario = async (req = request, res = response) => {
 
   try{
 
-    var usuarioEncontrado = await new Promise((resolve, reject) => {
-      
-      Usuario.getUsuarioPorId(data.idUsuario, (err, usuario) => {
-
-        (err)
-          ?reject(err)
-          :resolve(usuario);
-
-      });
-
-    });
+    var usuarioEncontrado = await getUsuarioPorId(res, data.idUsuario);
 
     if(usuarioEncontrado !== null){
 
@@ -157,70 +158,69 @@ const crearUsuario = async (req = request, res = response) => {
 
 }
 
-const editarAccesoDeUsuario = async (req = request, res = response) => {
+const eliminarCuenta = async (req = request, res = response) => {
 
-  const {id} = req.params;
-  const {estadoUsuario} = req.body;
+  const { id } = req.params;
+  var { estadoUsuario } = req.body;
+  estadoUsuario = estadoUsuario.trim();
+  const usuarioEncontrado = await getUsuarioPorIdEnURL(res, id);
+
+  if(usuarioEncontrado !== null) {
+    
+    if(usuarioEncontrado.idRol === "AD_123_R") return res.status(404).send({ mensaje:error404 });
+
+    if(usuarioEncontrado.estadoUsuario !== "Aceptado") return res.status(404).send({ mensaje:error404 });
+
+  }else{
+
+    return res.status(404).send({ mensaje:error404 })
+
+  }
+
+  const usuarioAutenticado = await autenticarUsuario(req, res);
+  const mensajeValidacion = await validarEntradaEstadoUsuario(estadoUsuario);
+
+  if(mensajeValidacion !== null) return res.status(400).send({ mensaje:mensajeValidacion });
+
+  if(usuarioAutenticado.idRol !== "AD_123_R"){
+
+    if(usuarioAutenticado.idUsuario == usuarioEncontrado.idUsuario){
+
+      if(estadoUsuario === "Eliminado"){
+
+        return await editarAccesoGenerico(res, id, estadoUsuario);
+  
+      }
+  
+      return res.status(400).send({ mensaje:"No puede realizar este cambio" });
+
+    }
+
+    return res.status(400).send({ mensaje:"Debe eliminar su propia cuenta" })
+
+  }
+
+  return res.status(401).send({ mensaje:"No tiene permiso para realizar este cambio" });
+
+}
+
+const getUsuarioPorId = async (res, id) => {
 
   try{
 
-    const usuarioEncontrado = await new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       
       Usuario.getUsuarioPorId(id, (err, usuario) => {
 
-        (err)
-          ?reject(err)
-          :resolve(usuario);
+        if(err) return res.status(500).send({ mensaje:error500 });
+
+        if(usuario !== null) resolve(usuario[0]);
+
+        if(usuario === null) resolve(usuario);
 
       });
 
     });
-
-    if(usuarioEncontrado.errno > 0) return res.status(500).send({mensaje:error500});
-
-    if(usuarioEncontrado !== null) {
-      
-      if(usuarioEncontrado[0].idRol === "AD_123_R") return res
-        .status(404).send({mensaje:error404});
-
-    }else{
-
-      return res.status(404).send({mensaje:error404})
-
-    }
-
-    //falta validar que sea el administrador
-    if(usuarioEncontrado[0].idRol === "RF_123_R" && estadoUsuario.trim() === "Aceptado"){
-
-      if(usuarioEncontrado[0].estadoUsuario === "En espera"){
-
-        return await editarAccesoGenerico(res, id, estadoUsuario.trim());
-
-      }else{
-
-        return res.status(409).send({mensaje:"Busca un refugio que tenga el estado 'En espera' para aceptarlo"});
-
-      }
-
-    }else if(estadoUsuario.trim() === "Bloqueado"){
-
-      if(usuarioEncontrado[0].estadoUsuario === "Aceptado"){
-
-        return await editarAccesoGenerico(res, id, estadoUsuario.trim());
-
-      }else{
-
-        return res.status(409).send({mensaje:"Busca un usuario que tenga el estado 'Aceptado' para bloquearlo"});
-
-      }
-
-    }else if(usuarioEncontrado[0].idRol === "RF_123_R" && estadoUsuario === "En espera"){
-
-      return res.status(400).send({mensaje:"El refugio no puede recibir este estado"});
-
-    }
-    
-    return res.status(400).send({mensaje:"El animalista no puede recibir el estado 'Aceptado' o 'En espera'"});
 
   }catch(err){
 
@@ -231,45 +231,10 @@ const editarAccesoDeUsuario = async (req = request, res = response) => {
 
 }
 
-const editarAccesoGenerico = async (res, id, estadoUsuario) => {
-
-  try{
-
-    const resultadoRegistro = await new Promise((resolve, reject) => {
-
-      Usuario.editarAcceso(id, estadoUsuario, (err, result) => {
-  
-        (err)
-          ?reject(err)
-          :resolve(result);
-  
-      });
-  
-    });
-  
-    if(resultadoRegistro.affectedRows === 1){
-  
-      return res.status(200).send({mensaje:"Se editó el usuario exitosamente"});
-  
-    }else{
-  
-      return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
-  
-    }
-
-  }catch(err){
-
-    console.group(err);
-    return res.status(500).send({mensaje:error500});
-
-  }
-
-}
-
 const editarUsuarioReportado = async (req = request, res = response) => {
 
-  const {id} = req.params;
-  var {contadorReportes} = req.body;
+  const { id } = req.params;
+  var { contadorReportes } = req.body;
 
   const mensajeValidacionContadorReportes = await new Promise((resolve, reject) => {
     
@@ -289,9 +254,9 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 
   });
 
-  if(mensajeValidacionContadorReportes){
+  if(mensajeValidacionContadorReportes !== null){
 
-    return res.status(400).send({mensaje:mensajeValidacionContadorReportes});
+    return res.status(400).send({ mensaje:mensajeValidacionContadorReportes });
 
   }
 
@@ -299,11 +264,11 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 
     const contadorAnterior = await new Promise((resolve, reject) => {
       
-      Usuario.getContadorReportes(id, (err, result) => {
+      Usuario.getContadorReportes(id, (err, contador) => {
 
         (err)
           ?reject(err)
-          :resolve(result);
+          :resolve(contador);
 
       });
 
@@ -335,11 +300,11 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 
     if(resultadoRegistro.affectedRows === 1){
 
-      return res.status(200).send({mensaje:"Usuario reportado exitosamente"});
+      return res.status(200).send({ mensaje:"Usuario reportado exitosamente" });
 
     }else{
 
-      return res.status(500).send({mensaje:"Ocurrió un error inesperado"});
+      return res.status(500).send({ mensaje:"Ocurrió un error inesperado" });
 
     }
 
@@ -353,15 +318,23 @@ const editarUsuarioReportado = async (req = request, res = response) => {
 
 const getListaUsuarios = (req = request, res = response) => {
 
-  const bandera = 0;
-
   try{
 
-    Usuario.getListaUsuarios(bandera, (err, lista) => {
+    Usuario.getListaUsuarios((err, lista) => {
 
-      (err)
-        ?res.status(500).send("Ourrió un error inesperado")
-        :res.status(200).send(lista);
+      if(err){
+
+        return res.status(500).send("Ocurrió un error inesperado");
+
+      }else if(lista !== null){
+
+        return res.status(200).send(lista);
+
+      }else{
+
+        return res.status(204).send();
+
+      }
   
     });
 
@@ -381,11 +354,21 @@ const buscarUsuario = (req = request, res = response) => {
 
   try{
 
-    Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, result) => {
+    Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, usuarioObtenido) => {
 
-      (err)
-        ?res.status(500).send("Ocurrió un error inesperado")
-        :res.status(200).send(result);
+      if(err){
+
+        return res.status(500).send("Ocurrió un error inesperado");
+
+      }else if(usuarioObtenido !== null){
+
+        return res.status(200).send(usuarioObtenido);
+
+      }else{
+
+        return res.status(204).send();
+
+      }
   
     });
 
@@ -403,18 +386,159 @@ const getUsuarioRegistrado = (req = request, res = response) => {
   const {usuario} = req.query;
   const bandera = 2;
 
-  Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, result) => {
+  try{
 
-    (err)
-      ?res.status(500).send("Ocurrió un error inesperado")
-      :res.status(200).send(result[0]);
+    Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, usuarioObtenido) => {
 
-  });
+      if(err){
+  
+        return res.status(500).send({ mensaje:"Ocurrió un error inesperado" });
+  
+      }else if(usuarioObtenido !== null){
+  
+        return res.status(200).send(usuarioObtenido[0]);
+  
+      }else{
+  
+        return res.status(204).send();
+  
+      }
+  
+    });
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+
+}
+
+const consultarListaEnlacesDonacion = async (req = request, res = response) => {
+
+  const {id} = req.params;
+
+  try{
+
+    const usuarioEncontrado = await new Promise((resolve, reject) => {
+    
+      Usuario.getUsuarioPorId(id, (err, usuario) => {
+  
+        (err)
+          ?reject(err)
+          :resolve(usuario);
+  
+      });
+  
+    });
+  
+    if(usuarioEncontrado === null){
+
+      return res.status(400).send({ mensaje:"Recurso inexistente" });
+  
+    }
+
+    if(usuarioEncontrado[0].idRol !== "RF_123_R" || usuarioEncontrado[0].estadoUsuario !== "Aceptado"){
+
+      return res.status(400).send({ mensaje:"Este usuario no tiene acceso a este recurso" });
+
+    }
+
+    const resultadoRegistro = await new Promise((resolve, reject) => {
+        
+      Usuario.getListaEnlacesDonacion(id, (err, lista) => {
+
+        (err)
+          ?reject(err)
+          :resolve(lista);
+
+      });
+
+    });
+
+    if(resultadoRegistro !== null){
+
+        return res.status(200).send(resultadoRegistro);
+
+    }else{
+
+      return res.status(204).send();
+
+    }
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
+
+}
+
+const consultarListaRedesSociales = async (req = request, res = response) => {
+
+  const {id} = req.params;
+
+  try{
+
+    const usuarioEncontrado = await new Promise((resolve, reject) => {
+    
+      Usuario.getUsuarioPorId(id, (err, usuario) => {
+  
+        (err)
+          ?reject(err)
+          :resolve(usuario);
+  
+      });
+  
+    });
+  
+    if(usuarioEncontrado === null){
+
+      return res.status(400).send({ mensaje:"Recurso inexistente" });
+  
+    }
+
+    if(usuarioEncontrado[0].idRol !== "RF_123_R" || usuarioEncontrado[0].estadoUsuario !== "Aceptado"){
+
+      return res.status(400).send({ mensaje:"Este usuario no tiene acceso a este recurso" });
+
+    }
+
+    const resultadoRegistro = await new Promise((resolve, reject) => {
+        
+      Usuario.getListaRedesSociales(id, (err, lista) => {
+
+        (err)
+          ?reject(err)
+          :resolve(lista);
+
+      });
+
+    });
+
+    if(resultadoRegistro !== null){
+
+        return res.status(200).send(resultadoRegistro);
+
+    }else{
+
+      return res.status(204).send();
+
+    }
+
+  }catch(err){
+
+    console.log(err);
+    return res.status(500).send(err);
+
+  }
 
 }
 
   const usuauriosDelete = (req = request, res = response) => {
-    const {id} = req.params;
+    const { id } = req.params;
     Usuario.borrar(id, (err, result)=>{
       (err)?res.send(err):res.send(result);
     });
@@ -423,9 +547,12 @@ const getUsuarioRegistrado = (req = request, res = response) => {
 module.exports = {
   crearUsuario,
   editarUsuarioReportado,
-  editarAccesoDeUsuario,
+  eliminarCuenta,
   getListaUsuarios,
   buscarUsuario,
   getUsuarioRegistrado,
+  consultarListaEnlacesDonacion,
+  consultarListaRedesSociales,
+  getUsuarioPorId,
   usuauriosDelete
 };
