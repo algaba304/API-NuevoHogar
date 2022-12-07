@@ -21,32 +21,21 @@ let Usuario = (usuario) => {
 
 Usuario.validarCamposVacios = (data) => {
 
-    if(!data.correoElectronico || 
-        data.correoElectronico.trim() === "") return "Correo no ingresado";
+    if(!data.correoElectronico || data.correoElectronico === "") return "Correo no ingresado";
     
-    if(!data.usuario || 
-        data.usuario.trim() === "") return "Nombre de usuario no ingresado";
-    
-    if(!data.estadoUsuario || 
-        data.estadoUsuario.trim() === "") return "Estado de usuario no ingresado";
+    if(!data.usuario || data.usuario === "") return "Nombre de usuario no ingresado";
 
-    if(!data.idRol || 
-        data.idRol.trim() === "") return "Id del rol no ingresado";
+    if(!data.idRol || data.idRol === "") return "Id del rol no ingresado";
 
-    if(!data.fechaNacimiento || 
-        data.fechaNacimiento.trim() === "") return "Fecha de nacimiento no ingresado";
+    if(!data.fechaNacimiento || data.fechaNacimiento === "") return "Fecha de nacimiento no ingresado";
 
-    if(!data.contrasenia || 
-        data.contrasenia.trim() === "") return "Contraseña no ingresada";
+    if(!data.contrasenia || data.contrasenia === "") return "Contraseña no ingresada";
 
-    if(!data.numeroTelefono || 
-        data.numeroTelefono.trim() === "") return "Telefono no ingresado";
+    if(!data.numeroTelefono || data.numeroTelefono === "") return "Telefono no ingresado";
 
-    if(!data.nombre || 
-        data.nombre.trim() === "") return "Nombre de la persona no ingresado";
+    if(!data.nombre || data.nombre === "") return "Nombre de la persona no ingresado";
 
-    if(!data.idUsuario || 
-        data.idUsuario.trim() === "") return "Id del usuario no ingresado";
+    if(!data.idUsuario || data.idUsuario === "") return "Id del usuario no ingresado";
 
     return null;
 
@@ -60,43 +49,38 @@ Usuario.validarCampoVacioContadorReportes = (contadorReportes) => {
 
 }
 
+Usuario.validarCampoVacioEstadoUsuario = (estadoUsuario) => {
+
+    if(!estadoUsuario || estadoUsuario === "") return "Estado de usuario no ingresado";
+    
+    return null;
+
+}
+
 Usuario.validarTipoDeDato = (data) => {
 
-    if(typeof data.usuario !== 
-        "string") return "El tipo de dato del nombre de usuario es incorrecto";
+    if(typeof data.usuario !== "string") return "El tipo de dato del nombre de usuario es incorrecto";
     
-    if(typeof data.idUsuario !== 
-        "string") return "El tipo de dato del id del usuario es incorrecto";
+    if(typeof data.idUsuario !== "string") return "El tipo de dato del id del usuario es incorrecto";
 
-    if(typeof data.correoElectronico !== 
-        "string") return "El tipo de dato del correo es incorrecto";
+    if(typeof data.correoElectronico !== "string") return "El tipo de dato del correo es incorrecto";
 
-    if(typeof data.contrasenia !== 
-        "string") return "El tipo de dato de la contraseña es incorrecta";
+    if(typeof data.contrasenia !== "string") return "El tipo de dato de la contraseña es incorrecta";
 
-    if(typeof data.nombre !== 
-        "string") return "El tipo de dato del nombre de la persona es incorrecto"
+    if(typeof data.nombre !== "string") return "El tipo de dato del nombre de la persona es incorrecto"
 
-    if(typeof data.numeroTelefono !== 
-        "string") return "El tipo de dato del numero de telefono es incorrecto";
+    if(typeof data.numeroTelefono !== "string") return "El tipo de dato del numero de telefono es incorrecto";
 
-    if(typeof data.estadoUsuario !== 
-        "string") return "El tipo de dato del estado del usuario es incorrecto";
+    if(typeof data.idRol !== "string") return "El tipo de dato del id del rol es incorrecto";
 
-    if(typeof data.idRol !== 
-        "string") return "El tipo de dato del id del rol es incorrecto";
+    if(typeof data.biografia !== "string" && data.biografia) return "El tipo de dato de la biografia es incorrecta";
 
-    if(typeof data.biografia !== "string" && 
-        data.biografia) return "El tipo de dato de la biografia es incorrecta";
-
-    if(typeof data.direccion !== "string" && 
-    data.direccion) return "El tipo de dato de la direccion es incorrecto";
+    if(typeof data.direccion !== "string" && data.direccion) return "El tipo de dato de la direccion es incorrecto";
 
     if(typeof data.fotoPerfilUsuario !== "string" && 
-        data.fotoPerfilUsuario) return "El tipo de dato de la foto de perfil es incorrecto";
+    data.fotoPerfilUsuario) return "El tipo de dato de la foto de perfil es incorrecto";
 
-    if(typeof data.fechaNacimiento !== 
-        "string") return "El tipo de dato de la fecha es incorrecta";
+    if(typeof data.fechaNacimiento !== "string") return "El tipo de dato de la fecha es incorrecta";
 
     return null;
 
@@ -105,47 +89,47 @@ Usuario.validarTipoDeDato = (data) => {
 Usuario.validarTipoDeDatoContadorReportes = (contadorReportes) => {
 
     if(typeof contadorReportes !== "number" && 
-        contadorReportes) return "El tipo de dato del contador de reportes es incorrecto";
+    contadorReportes) return "El tipo de dato del contador de reportes es incorrecto";
 
+    return null;
+
+}
+
+Usuario.validarTipoDeDatoEstadoUsuario = (estadoUsuario) => {
+
+    if(typeof estadoUsuario !== "string") return "El tipo de dato del estado del usuario es incorrecto";
+    
     return null;
 
 }
 
 Usuario.validarLimites = (data) => {
 
-    if(data.idUsuario.length > 
-        50) return "El id del usuario excede el limite de 50 caracteres";
+    if(data.idUsuario.length > 50) return "El id del usuario excede el limite de 50 caracteres";
 
-    if(data.usuario.lenth > 
-        50) return "El nombre del usuario excede el limite de 50 caracteres";
+    if(data.usuario.lenth > 50) return "El nombre del usuario excede el limite de 50 caracteres";
 
     if(data.biografia){
 
-        if(data.biografia.length > 
-            100) return "La biografia excede el limite de 50 caracteres";
+        if(data.biografia.length > 100) return "La biografia excede el limite de 50 caracteres";
 
     }
 
-    if(data.idRol.length > 
-        50) return "El id del rol excede el limite de 50 caracteres";
+    if(data.idRol.length > 50) return "El id del rol excede el limite de 50 caracteres";
 
-    if(data.correoElectronico.length > 
-        100) return "El correo excede el limite de 100 caracteres";
+    if(data.correoElectronico.length > 100) return "El correo excede el limite de 100 caracteres";
 
-    if(data.nombre.length > 
-        100) return "El nombre de la persona excede el limite de 100 caracteres";
+    if(data.nombre.length > 100) return "El nombre de la persona excede el limite de 100 caracteres";
 
     if(data.direccion){
 
-        if(data.direccion.length > 
-            100) return "La direccion excede el limite de 100 caracteres";
+        if(data.direccion.length > 100) return "La direccion excede el limite de 100 caracteres";
 
     }
 
     if(data.fotoPerfilUsuario){
 
-        if(data.fotoPerfilUsuario.length > 
-            500) return "La foto de perfil excede el limite de 500 caracteres";
+        if(data.fotoPerfilUsuario.length > 500) return "La foto de perfil excede el limite de 500 caracteres";
 
     }
 
@@ -157,11 +141,18 @@ Usuario.validarLimiteContadorReportes = (contadorReportes) => {
 
     if(contadorReportes){
 
-        if(contadorReportes > 
-            99999) return "El contador de reportes excede el limite de 99999";
+        if(contadorReportes > 99999) return "El contador de reportes excede el limite de 99999";
 
     }
 
+    return null;
+
+}
+
+Usuario.validarLimiteEstadoUsuario = (estadoUsuario) => {
+
+    if(estadoUsuario > 10) return "El estado excede el limite de 10 caracteres";
+    
     return null;
 
 }
@@ -391,7 +382,7 @@ Usuario.getContadorReportes = (id, callback) => {
 
 }
 
-Usuario.editarAcceso = (id, estado, callback) => {
+Usuario.editarAccesoDeUsuario = (id, estado, callback) => {
     
     dbConn.query("UPDATE Usuario SET estadoUsuario = ? WHERE idUsuario = ?", [estado, id], (err, res) => {
 
@@ -400,6 +391,7 @@ Usuario.editarAcceso = (id, estado, callback) => {
             :callback(null, res);
 
     });
+
 }
 
 Usuario.borrar = (id, callback) => {
