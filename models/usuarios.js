@@ -43,7 +43,7 @@ Usuario.validarCamposVacios = (data) => {
 
 Usuario.validarCampoVacioContadorReportes = (contadorReportes) => {
 
-    if(!contadorReportes) return "Contador de reportes no ingresado";
+    if(contadorReportes < 0 || contadorReportes === null) return "Contador de reportes no ingresado";
 
     return null;
 
@@ -335,6 +335,39 @@ Usuario.getUsuarioPorNombreDeUsuario = (bandera, nombreUsuario, callback) => {
 Usuario.crearUsuario = (data, callback) => {
 
     dbConn.query("INSERT INTO Usuario SET ?", data, (err, res) => {
+
+        (err)
+            ?callback(err, null)
+            :callback(null, res);
+
+    });
+
+}
+
+Usuario.editarUsuario = (id, usr, callback) => {
+
+    let data = [
+        usr.idUsuario,
+        usr.usuario,
+        usr.correoElectronico,
+        usr.biografia,
+        usr.contadorReportes,
+        usr.contrasenia,
+        usr.nombre,
+        usr.direccion,
+        usr.fechaNacimiento,
+        usr.fotoPerfilUsuario,
+        usr.numeroTelefono,
+        usr.estadoUsuario,
+        usr.idRol,
+        id
+    ];
+
+    let consulta = "UPDATE Usuario SET idUsuario = ?, usuario = ?, correoElectronico = ?, biografia = ?, " + 
+    "contadorReportes = ?, contrasenia = ?, nombre = ?, direccion = ?, fechaNacimiento = ?, fotoPerfilUsuario = ?, " + 
+    "numeroTelefono = ?, estadoUsuario = ?, idRol = ? WHERE idUsuario = ?";
+    
+    dbConn.query(consulta, data, (err, res) => {
 
         (err)
             ?callback(err, null)
