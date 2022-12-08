@@ -4,7 +4,8 @@ const {
     editarSolicitudRefugio
 } = require('../controllers/administrador');
 const { 
-    crearUsuario, 
+    crearCuenta, 
+    editarCuenta,
     editarUsuarioReportado, 
     eliminarCuenta,
     getListaUsuarios, 
@@ -24,7 +25,9 @@ router.get('/:id/donaciones', consultarListaEnlacesDonacion);
 
 router.get('/:id/redesSociales', consultarListaRedesSociales);
   
-router.post('/', crearUsuario);  
+router.post('/', crearCuenta);  
+
+router.put('/:id', editarCuenta);
 
 router.put('/:id/cuentas', eliminarCuenta);
 
