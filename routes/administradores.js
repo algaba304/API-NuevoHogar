@@ -1,7 +1,9 @@
 const {Router} = require('express');
 const {
+
     getListaRefugios,
     getListaUsuariosReportados
+    
 } = require('../controllers/administrador');
 const router = new Router();
 

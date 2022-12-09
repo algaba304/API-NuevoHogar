@@ -1,25 +1,29 @@
-const {Router} = require('express');
+const { Router } = require('express');
 const { 
+
     bloquearUsuario,
     editarSolicitudRefugio
+
 } = require('../controllers/administrador');
 const { 
+
     crearCuenta, 
     editarCuenta,
-    editarUsuarioReportado, 
+    reportarUsuario, 
     eliminarCuenta,
-    getListaUsuarios, 
-    buscarUsuario,
-    consultarListaEnlacesDonacion,
-    consultarListaRedesSociales,
-    usuauriosDelete
+    getListaUsuarios
+
 } = require('../controllers/usuarios');
+const {
+
+    consultarListaEnlacesDonacion,
+    consultarListaRedesSociales
+    
+} = require('../controllers/refugios');
 
 const router = Router();
 
 router.get('/', getListaUsuarios); 
-
-router.get('/:usuario/reportados', buscarUsuario);
 
 router.get('/:id/donaciones', consultarListaEnlacesDonacion);
 
@@ -35,8 +39,6 @@ router.put('/:id/solicitudes', editarSolicitudRefugio);
 
 router.put('/:id/permisos', bloquearUsuario);
 
-router.put('/:id/reportados', editarUsuarioReportado);
-
-router.delete('/:id', usuauriosDelete);  
+router.put('/:id/reportados', reportarUsuario);
 
 module.exports = router;

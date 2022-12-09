@@ -1,5 +1,4 @@
 const dbConn = require('../config/db.config');
-const validadorCorreo = require('deep-email-validator');
 
 let Usuario = (usuario) => {
 
@@ -195,8 +194,7 @@ Usuario.validarFecha = (fecha) => {
         const date = new Date(fecha);
         const timestamp = date.getTime();
 
-        if(typeof timestamp !== 'number' || 
-            Number.isNaN(timestamp)) return "No es una fecha aceptable";
+        if(typeof timestamp !== 'number' || Number.isNaN(timestamp)) return "No es una fecha aceptable";
 
         return null;
 
@@ -213,7 +211,7 @@ Usuario.validarTelefono = (telefono) => {
     const formato = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
 
     if(!formato.test(telefono)) return "El telefono debe tener 10 digitos y " + 
-        "el formato: \nXXX XXXX XXXX\nXXX-XXXX-XXXX\nXXXXXXXXXXX";
+    "el formato: \nXXX XXXX XXXX\nXXX-XXXX-XXXX\nXXXXXXXXXXX";
 
     return null;
 
@@ -221,7 +219,11 @@ Usuario.validarTelefono = (telefono) => {
 
 Usuario.validarCorreo = (correo) => {
 
-    return validadorCorreo.validate(correo);
+    const formato = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    if(!formato.test(correo)) return "El correo ingresado no es válido";
+
+    return null;
 
 }
 
@@ -230,8 +232,6 @@ Usuario.validarTipoUsuario = (estado, idRol) => {
     if(estado === 'Aceptado' && idRol === 'AN_123_R') return null;
 
     if(estado === 'En espera' && idRol === 'RF_123_R') return null;
-
-    //if(estado === 'Aceptado' && idRol === 'AD_123_R') return null;
 
     return "No es posible registrar este usuario";
 
@@ -295,8 +295,7 @@ Usuario.getUsuarioPorCorreo = (correo, callback) => {
 
 Usuario.getUsuarioPorNombreDeUsuario = (bandera, nombreUsuario, callback) => {
 
-    var consulta = "SELECT * FROM Usuario WHERE usuario = ? AND idRol != 'AD_123_R' " + 
-    "AND estadoUsuario = 'Aceptado'";
+    var consulta = "SELECT * FROM Usuario WHERE usuario = ? AND idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado'";
 
     if(bandera === 1){
 
@@ -336,9 +335,7 @@ Usuario.crearUsuario = (data, callback) => {
 
     dbConn.query("INSERT INTO Usuario SET ?", data, (err, res) => {
 
-        (err)
-            ?callback(err, null)
-            :callback(null, res);
+        (err) ? callback(err, null) : callback(null, res);
 
     });
 
@@ -369,9 +366,7 @@ Usuario.editarUsuario = (id, usr, callback) => {
     
     dbConn.query(consulta, data, (err, res) => {
 
-        (err)
-            ?callback(err, null)
-            :callback(null, res);
+        (err) ? callback(err, null) : callback(null, res);
 
     });
 
@@ -381,9 +376,7 @@ Usuario.editarUsuarioReportado = (id, contadorReportes, callback) => {
 
     dbConn.query("UPDATE Usuario SET contadorReportes = ? WHERE idUsuario = ?", [contadorReportes, id], (err, res) => {
 
-        (err)
-            ?callback(err, null)
-            :callback(null, res);
+        (err) ? callback(err, null) : callback(null, res);
 
     });
 
@@ -427,12 +420,6 @@ Usuario.editarAccesoDeUsuario = (id, estado, callback) => {
 
 }
 
-Usuario.borrar = (id, callback) => {
-    dbConn.query("DELETE FROM Usuario WHERE idUsuario = ?", id, (err, res) => {
-        (err)?callback(err, null):callback(null, res);
-    });
-}
-
 Usuario.getListaUsuarios = (bandera, callback) => {
 
     var consulta = "SELECT * FROM Usuario WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado'";
@@ -440,69 +427,9 @@ Usuario.getListaUsuarios = (bandera, callback) => {
     if(bandera === 1) consulta = "SELECT * FROM Usuario WHERE idRol = 'RF_123_R' AND estadoUsuario = 'En espera'";
     
     if( bandera === 2) consulta = "SELECT * FROM Usuario WHERE idRol != 'AD_123_R' AND estadoUsuario = 'Aceptado' " + 
-        "AND contadorReportes > 0";
+    "AND contadorReportes > 0";
 
     dbConn.query(consulta, (err, res) => {
-
-        if(err){
-
-            return callback(err, null);
-
-        }else if(res.length > 0){
-
-            return callback(null, res);
-
-        }else if(res[0]){
-
-            return callback(null, res);
-
-        }else{
-
-            return callback(null, null);
-
-        }
-
-    });
-
-}
-
-Usuario.getListaEnlacesDonacion = (id, callback) => {
-
-    const consulta = "SELECT e.idEnlaceDonacion, e.enlace, e.idMetodoDonacion, m.metodo " + 
-    "FROM EnlaceDonacion e LEFT JOIN MetodoDonacion m ON e.idMetodoDonacion = m.idMetoDonacion " + 
-    "WHERE e.idRefugio = ?";
-
-    dbConn.query(consulta, id, (err, res) => {
-
-        if(err){
-
-            return callback(err, null);
-
-        }else if(res.length > 0){
-
-            return callback(null, res);
-
-        }else if(res[0]){
-
-            return callback(null, res);
-
-        }else{
-
-            return callback(null, null);
-
-        }
-
-    });
-
-}
-
-Usuario.getListaRedesSociales = (id, callback) => {
-
-    const consulta = "SELECT e.idEnlaceRedSocial, e.enlace, e.idTipoRedSocial, t.nombre " + 
-    "FROM EnlaceRedSocial e LEFT JOIN TipoRedSocial t ON e.idTipoRedSocial = t.idTipoRedSocial " + 
-    "WHERE e.idUsuario = ?";
-
-    dbConn.query(consulta, id, (err, res) => {
 
         if(err){
 

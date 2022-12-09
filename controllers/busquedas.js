@@ -1,5 +1,4 @@
 const Usuario = require('../models/usuarios');
-
 const error500 = "Ocurrió un error inesperado";
 
 const getUsuarioPorId = async (res, id) => {
@@ -8,7 +7,11 @@ const getUsuarioPorId = async (res, id) => {
         
         Usuario.getUsuarioPorId(id, (err, usuario) => {
     
-            if(err) return res.status(500).send({ mensaje:error500 });
+            if(err) return res.status(500).send({ 
+
+                mensaje : error500 
+
+            });
     
             if(usuario !== null) resolve(usuario[0]);
     
@@ -46,7 +49,11 @@ const getUsuarioPorNombreDeUsuario = async (res, usuario) => {
         
         Usuario.getUsuarioPorNombreDeUsuario(bandera, usuario, (err, usuario) => {
 
-            if(err) return res.status(500).send({ mensaje:error500 });
+            if(err) return res.status(500).send({ 
+
+                mensaje : error500 
+
+            });
 
             if(usuario !== null) resolve(usuario[0]);
 
@@ -58,8 +65,11 @@ const getUsuarioPorNombreDeUsuario = async (res, usuario) => {
 
 }
 
+
 module.exports = {
+
     getUsuarioPorId,
     getUsuarioPorCorreo,
     getUsuarioPorNombreDeUsuario
-}
+    
+};

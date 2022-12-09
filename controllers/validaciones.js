@@ -1,7 +1,10 @@
 const Usuario = require('../models/usuarios');
-const { getUsuarioPorId, 
+const { 
+    
+    getUsuarioPorId, 
     getUsuarioPorCorreo,
     getUsuarioPorNombreDeUsuario
+
 } = require('../controllers/busquedas');
 
 const quitarEspaciosBlancos = (data) => {
@@ -15,9 +18,13 @@ const quitarEspaciosBlancos = (data) => {
     data.numeroTelefono = data.numeroTelefono.trim();
     data.nombre = data.nombre.trim();
     data.estadoUsuario = data.estadoUsuario.trim();
+
     if(data.biografia) data.biografia = data.biografia.trim();
+
     if(data.direccion) data.direccion = data.direccion.trim();
+
     if(data.fotoPerfilUsuario) data.fotoPerfilUsuario = data.fotoPerfilUsuario.trim();
+
     return data;
 
 }
@@ -64,7 +71,7 @@ const validarEntradasUsuarioDTO = async (data) => {
 
         mensaje = validarEntradaCorreo(data.correoElectronico);
 
-        if(mensaje) return resolve(mensaje);
+        if(mensaje !== null) return resolve(mensaje);
 
         return resolve(null);
 
@@ -110,7 +117,7 @@ const validarEntradaContadorReportes = async (contadorReportes) => {
 
         if(mensaje) return resolve(mensaje);
 
-        resolve(mensaje);
+        resolve(null);
 
     });
 
@@ -118,15 +125,11 @@ const validarEntradaContadorReportes = async (contadorReportes) => {
 
 const validarEntradaCorreo = async (correo) => {
 
-    const mensajeValidacionCorreo = await new Promise((resolve, reject) => {
-
+    return await new Promise((resolve, reject) => {
+        
         resolve(Usuario.validarCorreo(correo));
     
     });
-    
-    if(mensajeValidacionCorreo.valid === false) return "El correo no es válido";
-
-    return null;
 
 }
 
@@ -140,7 +143,13 @@ const buscarInformacionRepetida = async (res, data) => {
 
     }
 
-    usuarioEncontrado = await getUsuarioPorCorreo(res, data.correoElectronico);
+    return usuarioEncontrado = await buscarCorreoYNombreUsuarioRepetido(res, data);
+
+}
+
+const buscarCorreoYNombreUsuarioRepetido = async (res, data) => {
+
+    var usuarioEncontrado = await getUsuarioPorCorreo(res, data.correoElectronico);
 
     if(usuarioEncontrado !== null){
 
@@ -161,8 +170,12 @@ const buscarInformacionRepetida = async (res, data) => {
 }
 
 module.exports = {
+
     quitarEspaciosBlancos,
     validarEntradaEstadoUsuario,
+    validarEntradaContadorReportes,
     validarEntradasUsuarioDTO,
-    buscarInformacionRepetida
-}
+    buscarInformacionRepetida,
+    buscarCorreoYNombreUsuarioRepetido
+    
+};

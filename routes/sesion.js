@@ -1,10 +1,8 @@
 const Router = require('express');
-const {
-    getUsuarioRegistrado
-} = require('../controllers/usuarios');
+const { iniciarSesion } = require('../controllers/usuarios');
 
 const router = new Router();
 
-router.get('/', getUsuarioRegistrado);
+router.get('/', iniciarSesion);
 
 module.exports = router;
