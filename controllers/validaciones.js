@@ -143,13 +143,7 @@ const buscarInformacionRepetida = async (res, data) => {
 
     }
 
-    return usuarioEncontrado = await buscarCorreoYNombreUsuarioRepetido(res, data);
-
-}
-
-const buscarCorreoYNombreUsuarioRepetido = async (res, data) => {
-
-    var usuarioEncontrado = await getUsuarioPorCorreo(res, data.correoElectronico);
+    usuarioEncontrado = await getUsuarioPorCorreo(res, data.correoElectronico);
 
     if(usuarioEncontrado !== null){
 
@@ -164,7 +158,29 @@ const buscarCorreoYNombreUsuarioRepetido = async (res, data) => {
         if(usuarioEncontrado.usuario) return "El nombre de usuario ya está registrado";
 
     }
-    
+
+    return null;
+
+}
+
+const buscarCorreoYNombreUsuarioRepetido = async (res, data) => {
+
+    usuarioEncontrado = await getUsuarioPorCorreo(res, data.correoElectronico);
+
+    if(usuarioEncontrado !== null){
+
+        if(usuarioEncontrado.idUsuario !== data.idUsuario) return "El correo ya esta registrado";
+
+    }
+
+    usuarioEncontrado = await getUsuarioPorNombreDeUsuario(res, data.usuario);
+
+    if(usuarioEncontrado !== null){
+
+        if(usuarioEncontrado.idUsuario !== data.idUsuario) return "El nombre de usuario ya está registrado";
+
+    }
+
     return null;
 
 }

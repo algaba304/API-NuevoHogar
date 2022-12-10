@@ -134,13 +134,19 @@ const editarCuenta = async (req = request, res = response) => {
     
     });
     
-    usuarioEncontrado = await buscarCorreoYNombreUsuarioRepetido(res, data);
+    const mensajeInformacionRepetida = await buscarCorreoYNombreUsuarioRepetido(res, data);
+
+    if(mensajeInformacionRepetida !== null) return res.status(409).send({
+      
+      mensaje : mensajeInformacionRepetida
+
+    });
 
     const resultadoRegistro = await new Promise((resolve, reject) => {
     
       Usuario.editarUsuario(id, data, (err, result) => {
-  
-        if(err) return resultadoRegistro.status(500).send({ 
+        console.log(err);
+        if(err) return res.status(500).send({ 
           
           mensaje : error500 
         
@@ -161,7 +167,7 @@ const editarCuenta = async (req = request, res = response) => {
       });
   
     }else{
-  
+      
       return res.status(500).send({ 
         
         mensaje : error500
