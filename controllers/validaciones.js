@@ -11,13 +11,21 @@ const quitarEspaciosBlancos = (data) => {
 
     data.idUsuario = data.idUsuario.trim();
     data.idRol = data.idRol.trim();
+    data.estadoUsuario = data.estadoUsuario.trim();
+    data = quitarEspaciosBlancosEdicion(data);
+
+    return data;
+
+}
+
+const quitarEspaciosBlancosEdicion = (data) => {
+
     data.correoElectronico = data.correoElectronico.trim();
-    data.usuario = data.usuario.trim();
+    data.nombreUsuario = data.nombreUsuario.trim();
     data.fechaNacimiento = data.fechaNacimiento.trim();
     data.contrasenia = data.contrasenia.trim();
     data.numeroTelefono = data.numeroTelefono.trim();
     data.nombre = data.nombre.trim();
-    data.estadoUsuario = data.estadoUsuario.trim();
 
     if(data.biografia) data.biografia = data.biografia.trim();
 
@@ -29,7 +37,7 @@ const quitarEspaciosBlancos = (data) => {
 
 }
 
-const validarEntradasUsuarioDTO = async (data) => {
+const validarRegistroUsuarioDTO = async (data) => {
 
     return await new Promise((resolve, reject) => {
 
@@ -37,11 +45,19 @@ const validarEntradasUsuarioDTO = async (data) => {
 
         if(mensaje) return resolve(mensaje);
 
-        mensaje = validarEntradaEstadoUsuario(data.estadoUsuario);
+        mensaje = Usuario.validarEntradaIdUsuario(data.idUsuario);
+
+        if(mensaje) return resolve(mensaje);
+
+        mensaje = Usuario.validarEntradaEstadoUsuario(data.estadoUsuario);
 
         if(mensaje !== null) return resolve(mensaje);
         
-        mensaje = validarEntradaContadorReportes(data.contadorReportes);
+        mensaje = Usuario.validarEntradaContadorReportes(data.contadorReportes);
+
+        if(mensaje !== null) return resolve(mensaje);
+
+        mensaje = Usuario.validarEntradaIdRol(data.idRol);
 
         if(mensaje !== null) return resolve(mensaje);
 
@@ -65,11 +81,11 @@ const validarEntradasUsuarioDTO = async (data) => {
 
         if(mensaje) return resolve(mensaje);
 
-        mensaje = Usuario.validarTipoUsuario(data.estadoUsuario, data.idRol);
+        mensaje = Usuario.validarCorreo(data.correoElectronico);
 
         if(mensaje) return resolve(mensaje);
 
-        mensaje = validarEntradaCorreo(data.correoElectronico);
+        mensaje = Usuario.validarTipoUsuario(data.estadoUsuario, data.idRol);
 
         if(mensaje !== null) return resolve(mensaje);
 
@@ -79,56 +95,36 @@ const validarEntradasUsuarioDTO = async (data) => {
 
 }
 
-const validarEntradaEstadoUsuario = async (estadoUsuario) => {
+const validarEdicionUsuarioDTO = async (data) => {
 
     return await new Promise((resolve, reject) => {
         
-        var mensaje = Usuario.validarCampoVacioEstadoUsuario(estadoUsuario);
-        
-        if(mensaje) return resolve(mensaje);
-
-        mensaje = Usuario.validarTipoDeDatoEstadoUsuario(estadoUsuario);
+        var mensaje = Usuario.validarCamposVacios(data);
 
         if(mensaje) return resolve(mensaje);
 
-        mensaje = Usuario.validarLimiteEstadoUsuario(estadoUsuario);
+        mensaje = Usuario.validarTipoDeDato(data);
+
+        if(mensaje) return resolve(mensaje);
+
+        mensaje = Usuario.validarLimites(data);
+
+        if(mensaje) return resolve(mensaje);
+
+        mensaje = Usuario.validarCorreo(data.correoElectronico);
+
+        if(mensaje) return resolve(mensaje);
+
+        mensaje = Usuario.validarFecha(data.fechaNacimiento);
+
+        if(mensaje) return resolve(mensaje);
+
+        mensaje = Usuario.validarTelefono(data.numeroTelefono);
 
         if(mensaje) return resolve(mensaje);
 
         return resolve(null);
 
-    });
-
-}
-
-const validarEntradaContadorReportes = async (contadorReportes) => {
-
-    return await new Promise((resolve, reject) => {
-        
-        var mensaje = Usuario.validarCampoVacioContadorReportes(contadorReportes);
-
-        if(mensaje) return resolve(mensaje);
-
-        mensaje = Usuario.validarTipoDeDatoContadorReportes(contadorReportes);
-
-        if(mensaje) return resolve(mensaje);
-
-        mensaje = Usuario.validarLimiteContadorReportes(contadorReportes);
-
-        if(mensaje) return resolve(mensaje);
-
-        resolve(null);
-
-    });
-
-}
-
-const validarEntradaCorreo = async (correo) => {
-
-    return await new Promise((resolve, reject) => {
-        
-        resolve(Usuario.validarCorreo(correo));
-    
     });
 
 }
@@ -151,11 +147,11 @@ const buscarInformacionRepetida = async (res, data) => {
 
     }
 
-    usuarioEncontrado = await getUsuarioPorNombreDeUsuario(res, data.usuario);
+    usuarioEncontrado = await getUsuarioPorNombreDeUsuario(res, data.nombreUsuario);
 
     if(usuarioEncontrado !== null){
 
-        if(usuarioEncontrado.usuario) return "El nombre de usuario ya está registrado";
+        if(usuarioEncontrado.nombreUsuario) return "El nombre de usuario ya está registrado";
 
     }
 
@@ -166,18 +162,10 @@ const buscarInformacionRepetida = async (res, data) => {
 const buscarCorreoYNombreUsuarioRepetido = async (res, data) => {
 
     usuarioEncontrado = await getUsuarioPorCorreo(res, data.correoElectronico);
-
+    
     if(usuarioEncontrado !== null){
 
-        if(usuarioEncontrado.idUsuario !== data.idUsuario) return "El correo ya esta registrado";
-
-    }
-
-    usuarioEncontrado = await getUsuarioPorNombreDeUsuario(res, data.usuario);
-
-    if(usuarioEncontrado !== null){
-
-        if(usuarioEncontrado.idUsuario !== data.idUsuario) return "El nombre de usuario ya está registrado";
+        if(usuarioEncontrado.nombreUsuario !== data.nombreUsuario) return "El correo ya esta registrado";
 
     }
 
@@ -188,9 +176,9 @@ const buscarCorreoYNombreUsuarioRepetido = async (res, data) => {
 module.exports = {
 
     quitarEspaciosBlancos,
-    validarEntradaEstadoUsuario,
-    validarEntradaContadorReportes,
-    validarEntradasUsuarioDTO,
+    quitarEspaciosBlancosEdicion,
+    validarEdicionUsuarioDTO,
+    validarRegistroUsuarioDTO,
     buscarInformacionRepetida,
     buscarCorreoYNombreUsuarioRepetido
     

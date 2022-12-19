@@ -27,6 +27,9 @@ class Server{
         this.app.use('/api/usuarios', require('../routes/usuarios'));
         this.app.use('/api/administradores', require('../routes/administradores'));
         this.app.use('/api/sesion', require('../routes/sesion'));
+        this.app.use('/api/roles', require('../routes/roles'));
+        this.app.use('/api/metodosDonacion', require('../routes/metodosDonacion'));
+        this.app.use('/api/tiposRed', require('../routes/tiposRed'));
 
     }
 

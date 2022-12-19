@@ -1,6 +1,12 @@
 const { Router } = require('express');
 const { 
 
+    subir,
+    subirImagen 
+
+} = require('../controllers/perfilesDeUsuarios');
+const { 
+
     bloquearUsuario,
     editarSolicitudRefugio
 
@@ -17,7 +23,9 @@ const {
 const {
 
     consultarListaEnlacesDonacion,
-    consultarListaRedesSociales
+    consultarListaRedesSociales,
+    guardarMetodos,
+    guardarRedes
     
 } = require('../controllers/refugios');
 
@@ -40,5 +48,11 @@ router.put('/:id/solicitudes', editarSolicitudRefugio);
 router.put('/:id/permisos', bloquearUsuario);
 
 router.put('/:id/reportados', reportarUsuario);
+
+router.put('/:id/donaciones', guardarMetodos);
+
+router.put('/:id/redesSociales', guardarRedes);
+
+router.post('/perfiles', subir, subirImagen);
 
 module.exports = router;

@@ -5,6 +5,7 @@ const {
 
 } = require('express');
 const Usuario = require('../models/usuarios');
+const Rol = require('../models/roles');
 const { editarAccesoGenerico } = require('../controllers/autorizacion');
 const { 
   
@@ -15,13 +16,14 @@ const {
 const { 
 
   quitarEspaciosBlancos,
-  validarEntradaEstadoUsuario,
-  validarEntradaContadorReportes,
-  validarEntradasUsuarioDTO, 
+  quitarEspaciosBlancosEdicion,
+  validarEdicionUsuarioDTO,
+  validarRegistroUsuarioDTO, 
   buscarInformacionRepetida,
   buscarCorreoYNombreUsuarioRepetido
 
 } = require('../controllers/validaciones');
+const moment = require('moment/moment');
 const error404 = "Recurso inexistente";
 const error500 = "Ocurrión un error inesperado";
 
@@ -30,11 +32,28 @@ const crearCuenta = async (req = request, res = response) => {
   try{
 
     let data = req.body;
-    data.idRol = `${ req.body.idRol.idRol }`;
+    data.rol = `${data.rol.idRol}`;
     data.contadorReportes = 0;
-    data = quitarEspaciosBlancos(data);
 
-    const mensajeValidacion = await validarEntradasUsuarioDTO(data);
+    let dataDB = {
+
+      "idUsuario" : data.idUsuario,
+      "idRol" : data.rol,
+      "estadoUsuario" : data.estadoUsuario,
+      "nombreUsuario" : data.nombreUsuario,
+      "correoElectronico" : data.correoElectronico,
+      "contrasenia" : data.contrasenia,
+      "nombre" : data.nombre,
+      "direccion" : data.direccion,
+      "fechaNacimiento" : data.fechaNacimiento,
+      "numeroTelefono" : data.numeroTelefono,
+      "contadorReportes" : data.contadorReportes
+
+    }
+
+    dataDB = quitarEspaciosBlancos(dataDB);
+
+    const mensajeValidacion = await validarRegistroUsuarioDTO(dataDB);
 
     if(mensajeValidacion !== null) return res.status(409).send({ 
       
@@ -42,32 +61,32 @@ const crearCuenta = async (req = request, res = response) => {
     
     });
 
-    const mensajeInformacionRepetida = await buscarInformacionRepetida(res, data);
+    const mensajeInformacionRepetida = await buscarInformacionRepetida(res, dataDB);
 
     if(mensajeInformacionRepetida) return res.status(409).send({ 
       
       mensaje : mensajeInformacionRepetida 
     
     });
-
+    
     const resultadoRegistro = await new Promise((resolve, reject) => {
+      
+      Usuario.crearUsuario(dataDB, (err, result) => {
         
-      Usuario.crearUsuario(data, (err, result) => {
-
         if(err) return res.status(500).send({ 
           
-          mensaje : error500 
+          mensaje : error500
         
         });
-
+        
         resolve(result);
 
       });
 
     });
-
+    
     if(resultadoRegistro.affectedRows === 1){
-
+      
       return res.status(200).send({
         
         mensaje : "Se agregó el usuario exitosamente"
@@ -75,7 +94,7 @@ const crearCuenta = async (req = request, res = response) => {
       });
 
     }else{
-
+      
       return res.status(500).send({
         
         mensaje : error500
@@ -85,10 +104,10 @@ const crearCuenta = async (req = request, res = response) => {
     }
 
   }catch(err){
-
+    
     return res.status(500).send({ 
 
-      mensaje : error500 
+      mensaje : error500
       
     });
 
@@ -101,11 +120,22 @@ const editarCuenta = async (req = request, res = response) => {
   try{
 
     let data = req.body;
-    const {id} = req.params;
-    data.idRol = `${ req.body.idRol.idRol }`;
-    data.contadorReportes = 0;
-    data.idUsuario = id;
-    data = await quitarEspaciosBlancos(data);
+    const { id } = req.params;
+    let dataDB = {
+
+      "nombreUsuario" : data.nombreUsuario,
+      "correoElectronico" : data.correoElectronico,
+      "biografia" : data.biografia,
+      "contrasenia" : data.contrasenia,
+      "nombre" : data.nombre,
+      "direccion" : data.direccion,
+      "fechaNacimiento" : data.fechaNacimiento,
+      "numeroTelefono" : data.numeroTelefono,
+      "fotoPerfilUsuario" : data.fotoPerfilUsuario
+
+    }
+
+    dataDB = await quitarEspaciosBlancosEdicion(dataDB);
     var usuarioEncontrado = await getUsuarioPorId(res, id);
     
     if(usuarioEncontrado !== null) {
@@ -126,7 +156,7 @@ const editarCuenta = async (req = request, res = response) => {
   
     }
   
-    const mensajeValidacion = await validarEntradasUsuarioDTO(data);
+    const mensajeValidacion = await validarEdicionUsuarioDTO(dataDB);
     
     if(mensajeValidacion !== null) return res.status(400).send({ 
       
@@ -134,7 +164,7 @@ const editarCuenta = async (req = request, res = response) => {
     
     });
     
-    const mensajeInformacionRepetida = await buscarCorreoYNombreUsuarioRepetido(res, data);
+    const mensajeInformacionRepetida = await buscarCorreoYNombreUsuarioRepetido(res, dataDB);
 
     if(mensajeInformacionRepetida !== null) return res.status(409).send({
       
@@ -144,8 +174,8 @@ const editarCuenta = async (req = request, res = response) => {
 
     const resultadoRegistro = await new Promise((resolve, reject) => {
     
-      Usuario.editarUsuario(id, data, (err, result) => {
-        console.log(err);
+      Usuario.editarUsuario(id, dataDB, (err, result) => {
+        
         if(err) return res.status(500).send({ 
           
           mensaje : error500 
@@ -376,16 +406,69 @@ const getListaUsuarios = (req = request, res = response) => {
 const iniciarSesion = async (req = request, res = response) => {
 
   try{
+    
+    const { nombreUsuario } = req.query;
+    const { contrasenia } = req.query;
+    const usuarioEncontrado = await getUsuarioPorNombreDeUsuario(res, nombreUsuario);
+    
+    if(usuarioEncontrado.contrasenia !== contrasenia) return res.status(400).send({
+      mensaje : "Contraseña incorrecta"
+    });
+    
+    if(usuarioEncontrado !== null){
+      
+      const rolObtenido = await new Promise((resolve, reject) => {
 
-    const { usuario } = req.query;
-    const usuarioEncontrado = await getUsuarioPorNombreDeUsuario(res, usuario);
+        Rol.getRol(usuarioEncontrado.idRol, (err, rol) => {
+    
+          if(err){
 
-    if(usuarioEncontrado !== null) return res.status(200).send(usuarioEncontrado);
+            return res.status(500).send({
+    
+              mensaje : error500
+      
+            });
+
+          }
+
+          resolve(rol);
+    
+        });
+  
+      });
+
+      const fecha = moment(usuarioEncontrado.fechaNacimiento).utc().format("YYYY-MM-DD");
+      fechaString = fecha.toString();
+      
+      let usuario = {
+
+        "idUsuario" : usuarioEncontrado.idUsuario,
+        "correoElectronico" : usuarioEncontrado.correoElectronico,
+        "nombre" : usuarioEncontrado.nombre,
+        "numeroTelefono" : usuarioEncontrado.numeroTelefono,
+        "direccion" : usuarioEncontrado.direccion,
+        "contrasenia" : usuarioEncontrado.contrasenia,
+        "fechaNacimiento" : fechaString,
+        "biografia" : usuarioEncontrado.biografia,
+        "fotoPerfilUsuario" : usuarioEncontrado.fotoPerfilUsuario,
+        "rol" : { 
+          "idRol" : usuarioEncontrado.idRol, 
+          "nombre" : rolObtenido.nombre 
+        },
+        "nombreUsuario" : usuarioEncontrado.nombreUsuario,
+        "contadorReportes" : usuarioEncontrado.contadorReportes,
+        "estadoUsuario" : usuarioEncontrado.estadoUsuario
+  
+      }
+
+      return res.status(200).send(usuario);
+
+    }
 
     return res.status(204).send();
 
   }catch(err){
-
+    
     return res.status(500).send({
 
       mensaje : error500
