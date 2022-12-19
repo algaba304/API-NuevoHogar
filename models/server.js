@@ -33,6 +33,10 @@ class Server{
         this.app.use('/api/escuelas', require('../routes/escuelas'));
         this.app.use('/api/refugios', require('../routes/administrador'));
         this.app.use('/api/mensajes', require('../routes/mensajes'));
+        this.app.use('/api/reportes', require('../routes/reportes'));
+        this.app.use('/api/chats', require('../routes/chat'));
+        this.app.use('/api/evidencias', require('../routes/evidencias'));
+        this.app.use('/api/participantes', require('../routes/participantes'));
     }
 
     listen(){

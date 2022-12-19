@@ -2,9 +2,18 @@ const dbConn = require('../config/db.config');
 
 let Chat = (chat) => {
     this.idChat = chat.idChat;
-    this.nombre = chat.nombre;
     this.descripcion = chat.descripcion;
+    this.nombre = chat.nombre;
     this.fechaCreacion = chat.fechaCreacion;
+};
+
+Chat.getReportChat = (idR, callback) => {
+    let sqlQuery = "select c.idChat, c.descripcion, c.nombre, c.fechaCreacion from Chat c inner join ReporteDeMaltrato r on c.descripcion = r.idReporteDeMaltrato where r.idReporteDeMaltrato = ?";
+    dbConn.query(sqlQuery, idR, (err, res) => {
+        (err)
+            ?callback(err, null)
+            :callback(null, res)
+    });
 };
 
 Chat.getUserChats = (idU, callback) => {
@@ -42,30 +51,4 @@ Chat.create = (data, callback) => {
     });
 };
 
-Chat.addParticipant = (idC, idU, callback) => {
-    let sqlQuery = "insert into Participa SET idUsuario = ?, idChat = ?";
-    dbConn.query(sqlQuery, idU, idC, (err, res) => {
-        (err)
-            ?callback(err, null)
-            :callback(null, res)
-    });
-};
-
-Chat.deleteParticipant = (idC, idU, callback) => {
-    let sqlQuery = "delete from Participa where idChat = ? and idUsuario = ?";
-    dbConn.query(sqlQuery, idC, idU, (err, res) => {
-        (err)
-            ?callback(err, null)
-            :callback(null, res)
-    });
-};
-
-Chat.deleteAllParticipants = (idC, callback) => {
-    let sqlQuery = "delete from Participa where idChat = ?";
-    dbConn.query(sqlQuery, idC, (err, res) => {
-        (err)
-            ?callback(err, null)
-            :callback(null, res)
-    });
-};
-
+module.exports = Chat;

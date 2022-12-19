@@ -1,19 +1,23 @@
 const {response, request} = require('express');
 const Mensaje = require('../models/mensajes');
 
-const mensajesGetLastMessage = (res = response) => {
-   Mensaje.getLastMessage((err, escuelas)=>{
+const mensajesGetLastMessage = (req, res = response) => {
+   const {idC} = req.params;
+   Mensaje.getLastMessage(idC, (err, mensaje)=>{
         (err)
             ?res.send(err)
-            :res.send(escuelas)
+            :res.send(mensaje)
     });
 }
 
-const mensajesGetLastMessages = (res = response) => {
-    Mensaje.getLastMessages((err, escuelas)=>{
+const mensajesGetLastMessages = (req, res = response) => {
+    const {idC} = req.params;
+    let data = req.body;
+    console.log(data);
+    Mensaje.getLastMessages(idC, data, (err, mensajes)=>{
          (err)
              ?res.send(err)
-             :res.send(escuelas)
+             :res.send(mensajes)
      });
  }
 
@@ -28,35 +32,23 @@ const mensajesPost = (req, res) => {
 }
 
 const mensajesDeleteOne = (req, res = response) => {
-    const {id} = req.params;
+    const {idC} = req.params;
 
-    const result1 = new Promise((res, rej) => {
-        Mensaje.deleteById(id, (err, result) => {
-            return (err)
-                ? rej(err)
-                : res(result);
-        });
+    Mensaje.deleteById(idC, (err, result) =>{
+        (err)
+            ?res.send(err)
+            :res.json(result);
     });
-
-    if(result1.affectedRows === 1){
-        return res.status(200).send("Mensaje eliminado");
-    }
 }
 
 const mensajesDeleteAll = (req, res = response) => {
-    const {id} = req.params;
+    const {idC} = req.params;
 
-    const result1 = new Promise((res, rej) => {
-        Mensaje.deleteAllChatMessages(id, (err, result) => {
-            return (err)
-                ? rej(err)
-                : res(result);
-        });
+    Mensaje.deleteAllChatMessages(idC, (err, result) =>{
+        (err)
+            ?res.send(err)
+            :res.json(result);
     });
-
-    if(result1.affectedRows >= 1){
-        return res.status(200).send("Mensajes eliminados");
-    }
 }
   
 module.exports = {

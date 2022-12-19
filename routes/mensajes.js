@@ -15,7 +15,7 @@ router.get('/lastMessages/:idC', mensajesGetLastMessages);
 router.post('/', mensajesPost);
 
 router.delete('/oneMessage/:idC', mensajesDeleteOne);  
-r
+
 router.delete('/allMessage/:idC', mensajesDeleteAll); 
 
 module.exports = router;
