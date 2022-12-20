@@ -53,6 +53,6 @@ router.put('/:id/donaciones', guardarMetodos);
 
 router.put('/:id/redesSociales', guardarRedes);
 
-router.post('/perfiles', subir, subirImagen);
+router.put('/:id/perfiles', subir, subirImagen);
 
 module.exports = router;
