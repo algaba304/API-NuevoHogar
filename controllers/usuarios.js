@@ -251,7 +251,7 @@ const eliminarCuenta = async (req = request, res = response) => {
 
     }
 
-    const mensajeValidacion = await validarEntradaEstadoUsuario(estadoUsuario);
+    const mensajeValidacion = Usuario.validarEntradaEstadoUsuario(estadoUsuario);
 
     if(mensajeValidacion !== null) return res.status(400).send({ 
       
@@ -272,7 +272,7 @@ const eliminarCuenta = async (req = request, res = response) => {
     });
 
   }catch(err){
-
+    
     return res.status(500).send({ 
       
       mensaje : error500 
@@ -410,8 +410,14 @@ const iniciarSesion = async (req = request, res = response) => {
     const { nombreUsuario } = req.query;
     const { contrasenia } = req.query;
     const usuarioEncontrado = await getUsuarioPorNombreDeUsuario(res, nombreUsuario);
+
+    if(usuarioEncontrado === null) return res.status(404).send({
+
+      mensaje : "Usuario inexistente"
+
+    });
     
-    if(usuarioEncontrado.contrasenia !== contrasenia) return res.status(400).send({
+    if(usuarioEncontrado.contrasenia !== contrasenia) return res.status(409).send({
       mensaje : "Contraseña incorrecta"
     });
     
