@@ -28,7 +28,6 @@ const {
     guardarRedes
     
 } = require('../controllers/refugios');
-
 const router = Router();
 
 router.get('/', getListaUsuarios); 

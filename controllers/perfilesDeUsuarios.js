@@ -10,18 +10,19 @@ const Usuario = require('../models/usuarios');
 const error500 = "Ocurrió un error inesperado";
 
 var nombreImagen;
+var destino = 'public/perfilesDeUsuario';
 
 const almacenamiento = multer.diskStorage({
 
     destination : function(req, file, cb){
 
-        cb(null, 'public/perfilesDeUsuario');
+        cb(null, destino);
 
     },
 
     filename : function(req, file, cb){
         
-        rutaImagen = `${Date.now()}-${file.originalname}`;
+        nombreImagen = `${Date.now()}-${file.originalname}`;
         cb(null, nombreImagen);
 
     }
@@ -39,8 +40,8 @@ const subir = cargador.single('imagen');
 const subirImagen = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const rutaImagen = path.join(__dirname, nombreImagen);
     console.log(__dirname);
+
     /*
     const resultadoRegistro = await new Promise((resolve, reject) => {
 

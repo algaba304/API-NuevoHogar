@@ -417,7 +417,7 @@ const iniciarSesion = async (req = request, res = response) => {
 
     });
     
-    if(usuarioEncontrado.contrasenia !== contrasenia) return res.status(400).send({
+    if(usuarioEncontrado.contrasenia !== contrasenia) return res.status(409).send({
       mensaje : "Contraseña incorrecta"
     });
     
