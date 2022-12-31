@@ -28,7 +28,6 @@ const {
     guardarRedes
     
 } = require('../controllers/refugios');
-
 const router = Router();
 
 router.get('/', getListaUsuarios); 
@@ -53,6 +52,6 @@ router.put('/:id/donaciones', guardarMetodos);
 
 router.put('/:id/redesSociales', guardarRedes);
 
-router.post('/perfiles', subir, subirImagen);
+router.put('/:id/perfiles', subir, subirImagen);
 
 module.exports = router;

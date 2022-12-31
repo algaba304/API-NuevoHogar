@@ -30,7 +30,6 @@ class Server{
         this.app.use('/api/roles', require('../routes/roles'));
         this.app.use('/api/metodosDonacion', require('../routes/metodosDonacion'));
         this.app.use('/api/tiposRed', require('../routes/tiposRed'));
-        this.app.use('/api/refugios', require('../routes/administradores'));
         this.app.use('/api/mensajes', require('../routes/mensajes'));
         this.app.use('/api/reportes', require('../routes/reportes'));
         this.app.use('/api/chats', require('../routes/chat'));
