@@ -1,8 +1,9 @@
-FROM node:10-alpinne
+FROM node:10-alpine
 
 WORKDIR /app
-COPY package.js .
+COPY package*.json ./
 RUN npm install
 COPY . .
+EXPOSE 8080
 
-CMD ["node", "app"]
+CMD ["npm", "start"]
