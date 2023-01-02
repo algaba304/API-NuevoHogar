@@ -13,6 +13,7 @@ const idRolAdministrador = "AD_123_R";
 const idRolAnimalista = "AN_123_R";
 const idRolRefugio = "RF_123_R";
 const estadoAceptado = "Aceptado";
+const estadoEliminado = "Eliminado";
 
 const getListaRefugios = async (req = request, res = response) => {
 
@@ -160,7 +161,7 @@ const editarSolicitudRefugio = async (req = request, res = response) => {
         
         });
         
-        if(estadoUsuario === estadoAceptado){
+        if(estadoUsuario === estadoAceptado || estadoUsuario === estadoEliminado){
 
             return await editarAccesoGenerico(res, id, estadoUsuario);
 
@@ -175,7 +176,7 @@ const editarSolicitudRefugio = async (req = request, res = response) => {
         }
 
     }catch(err){
-
+        
         return res.status(500).send({
 
             mensaje : error500
