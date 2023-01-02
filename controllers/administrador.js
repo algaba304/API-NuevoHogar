@@ -7,7 +7,6 @@ const {
 const Usuario = require('../models/usuarios');
 const { editarAccesoGenerico } = require('../controllers/autorizacion');
 const { getUsuarioPorId } = require('../controllers/busquedas');
-const { validarEntradaEstadoUsuario } = require('./validaciones');
 const error404 = "Recurso inexistente";
 const error500 = "Ocurrión un error inesperado";
 const idRolAdministrador = "AD_123_R";
@@ -153,7 +152,7 @@ const editarSolicitudRefugio = async (req = request, res = response) => {
 
         }
         
-        const mensajeValidacion = await validarEntradaEstadoUsuario(estadoUsuario);
+        const mensajeValidacion = Usuario.validarEntradaEstadoUsuario(estadoUsuario);
 
         if(mensajeValidacion !== null) return res.status(400).send({ 
             
@@ -219,7 +218,7 @@ const bloquearUsuario = async (req = request, res = response) => {
 
         }
 
-        const mensajeValidacion = await validarEntradaEstadoUsuario(estadoUsuario);
+        const mensajeValidacion = Usuario.validarEntradaEstadoUsuario(estadoUsuario);
 
         if(mensajeValidacion !== null) return res.status(400).send({ 
             

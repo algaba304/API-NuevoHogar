@@ -290,7 +290,7 @@ const reportarUsuario = async (req = request, res = response) => {
     const { id } = req.params;
     var { contadorReportes } = req.body;
 
-    const mensajeValidacion = await validarEntradaContadorReportes(contadorReportes);
+    const mensajeValidacion = Usuario.validarEntradaContadorReportes(contadorReportes);
 
     if(mensajeValidacion !== null){
 
@@ -305,7 +305,7 @@ const reportarUsuario = async (req = request, res = response) => {
     const contadorAnterior = await new Promise((resolve, reject) => {
       
       Usuario.getContadorReportes(id, (err, contador) => {
-
+        
         (err) ? reject(err) : resolve(contador);
 
       });
@@ -327,7 +327,7 @@ const reportarUsuario = async (req = request, res = response) => {
     const resultadoRegistro = await new Promise((resolve, reject) => {
       
       Usuario.editarUsuarioReportado(id, contadorReportes, (err, result) => {
-
+        
         (err) ? reject(err) : resolve(result);
     
       });
@@ -343,7 +343,7 @@ const reportarUsuario = async (req = request, res = response) => {
       });
 
     }else{
-
+      
       return res.status(500).send({ 
         
         mensaje : error500 
@@ -353,7 +353,7 @@ const reportarUsuario = async (req = request, res = response) => {
     }
 
   }catch(err){
-
+    
     res.status(500).send({
       
       mensaje : error500
