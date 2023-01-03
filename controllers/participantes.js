@@ -5,7 +5,7 @@ const chatsGetChatParticipants = (req, res) => {
     const {idC} = req.params;
     Participante.getChatParticipants(idC, (err, result)=>{
         (err)
-            ?res.send(err)
+            ?res.status(400).send(err)
             :res.send(result);
     });
 }
@@ -15,7 +15,7 @@ const chatsAddParticipant = (req, res) => {
     console.log(data);
     Participante.addParticipant(data, (err, result)=>{
         (err)
-            ?res.send(err)
+            ?res.status(400).send(err)
             :res.send(result);
     });
 }
@@ -26,7 +26,7 @@ const chatsDeleteParticipant = (req, res = response) => {
 
     Participante.deleteParticipant(data, (err, result)=>{
         (err)
-            ?res.send(err)
+            ?res.status(400).send(err)
             :res.send(result);
     });
 }
@@ -36,7 +36,7 @@ const chatsDeleteAllParticipants = (req, res = response) => {
 
     Participante.deleteAllParticipants(idC, (err, result)=>{
         (err)
-            ?res.send(err)
+            ?res.status(400).send(err)
             :res.send(result);
     });
 }
