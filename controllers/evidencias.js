@@ -5,7 +5,7 @@ const evidenciasGet = (req, res = response) => {
     const {idR} = req.params;
     Evidencia.getAll(idR, (err, evidencias)=>{
         (err)
-            ?res.send(err)
+            ?res.status(400).send(err)
             :res.send(evidencias)
     });
 }
@@ -15,21 +15,9 @@ const evidenciasDeleteOne = (req, res = response) => {
 
     Evidencia.deleteOneEvidence(idE, (err, result) =>{
         (err)
-            ?res.send(err)
+            ?res.status(400).send(err)
             :res.json(result);
     });
-
-    /*const result1 = new Promise((res, rej) => {
-        Evidencia.deleteOneEvidence(idE, (err, result) => {
-            return (err)
-                ? rej(err)
-                : res(result);
-        });
-    });
-    
-    if(result1.affectedRows === 1){
-        return res.status(200).send("Evidencia eliminada");
-    }*/
 }
 
 const evidenciasDeleteAll = (req, res = response) => {
@@ -37,22 +25,9 @@ const evidenciasDeleteAll = (req, res = response) => {
 
     Evidencia.deleteAllEvidences(idR, (err, result) =>{
         (err)
-            ?res.send(err)
+            ?res.status(400).send(err)
             :res.json(result);
     });
-
-
-   /* const result1 = new Promise((res, rej) => {
-        Evidencia.deleteAllEvidences(idR, (err, result) => {
-            return (err)
-                ? rej(err)
-                : res(result);
-        });
-    });
-    
-    if(result1.affectedRows >= 1){
-        return res.status(200).send("Evidencias eliminadas");
-    }*/
 }
 
 const evidenciasPost = (req, res) => {
@@ -60,7 +35,7 @@ const evidenciasPost = (req, res) => {
     console.log(data);
     Evidencia.create(data, (err, result)=>{
         (err)
-            ?res.send(err)
+            ?res.status(400).send(err)
             :res.send(result);
     });
 }
